@@ -1,5 +1,0 @@
-timestamp=2026-10-06T01:59:08.010Z level=INFO fiber=#1 message="Loading stack state"
-timestamp=2026-10-06T01:59:08.010Z level=DEBUG fiber=#1 message="state store: initializing"
-timestamp=2026-10-06T01:59:08.011Z level=DEBUG fiber=#1 message="auth lock: acquiring '/Users/jem/.alchemy/lock/profiles-migrate.lock' for profiles-migrate"
-timestamp=2026-10-06T01:59:08.011Z level=DEBUG fiber=#1 message="auth lock: acquired '/Users/jem/.alchemy/lock/profiles-migrate.lock' for profiles-migrate"
-timestamp=2026-10-06T01:59:08.012Z level=DEBUG fiber=#1 message="auth lock: releasing '/Users/jem/.alchemy/lock/profiles-migrate.lock' for profiles-migrate"

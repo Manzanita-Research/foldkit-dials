@@ -16,6 +16,9 @@ const program = DialPanel.attach(
     onAction: path =>
       path === 'replay' ? Message.RequestedReplay() : Message.ClickedCard(),
     theme: 'Light',
+    // NOTE: the panel is the point of the demo, so the deployed build shows
+    // it too; an app would keep the default and show it in development only.
+    show: 'Always',
   },
 )
 

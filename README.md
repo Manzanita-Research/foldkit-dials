@@ -8,6 +8,17 @@ Live tuning controls for [Foldkit](https://foldkit.dev) apps, after Josh Puckett
 
 Status: early. Not yet published to npm. Built on `foldkit` 0.166 and `effect` 4.0.
 
+## Deploy the demo
+
+The demo deploys to a Cloudflare Worker with [Alchemy](https://alchemy.run/cloudflare/frontend/foldkit/). `alchemy.run.ts` declares it as one `Cloudflare.Website.Foldkit`, and Alchemy runs the project's `vite build` and uploads the output as static assets.
+
+```sh
+pnpm run deploy    # the first run asks you to sign in to Cloudflare
+pnpm run destroy   # removes the Worker
+```
+
+The first deploy also sets up Alchemy's state store in the Cloudflare account. It prints the demo's URL when it finishes.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE). DialKit's stylesheet and design are used under its MIT licence, and Foldkit under its own. See [NOTICE](packages/foldkit-dials/NOTICE).

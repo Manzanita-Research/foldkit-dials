@@ -1,0 +1,30 @@
+export {
+  init,
+  update,
+  view,
+  subscriptions,
+  bezierGeometry,
+  controlLineEnd,
+  moveHandle,
+  handleId,
+  FocusHandle,
+  VIEW_BOX_WIDTH,
+  VIEW_BOX_HEIGHT,
+  Handle,
+  Model,
+  Message,
+  OutMessage,
+  type PressedHandle,
+  type MovedDragPointer,
+  type ReleasedDragPointer,
+  type CancelledDrag,
+  type PressedKeyboardNavigation,
+} from './index.js'
+
+export type {
+  InitConfig,
+  ViewInputs,
+  RenderInfo,
+  BezierEditorAttributes,
+  BezierGeometry,
+} from './index.js'

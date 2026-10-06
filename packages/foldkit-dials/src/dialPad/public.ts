@@ -1,0 +1,30 @@
+export {
+  init,
+  update,
+  view,
+  subscriptions,
+  snapToAxis,
+  valueAtFraction,
+  gridIntersection,
+  gridLineOffsets,
+  thumbId,
+  FocusThumb,
+  Axis,
+  Value,
+  Model,
+  Message,
+  OutMessage,
+  type PressedSurface,
+  type MovedDragPointer,
+  type ReleasedDragPointer,
+  type CancelledDrag,
+  type PressedKeyboardNavigation,
+  type RequestedReset,
+} from './index.js'
+
+export type {
+  InitConfig,
+  ViewInputs,
+  RenderInfo,
+  DialPadAttributes,
+} from './index.js'

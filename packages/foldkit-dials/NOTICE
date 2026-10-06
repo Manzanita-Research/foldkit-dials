@@ -1,0 +1,21 @@
+foldkit-dials
+
+This package contains material from the following projects.
+
+DialKit
+https://github.com/joshpuckett/dialkit
+MIT License, Copyright (c) 2026 Josh Puckett. Full text: LICENSE.dialkit.
+- src/styles/dials.css: DialKit's stylesheet, with a foldkit-dials overrides
+  section appended.
+- src/dialPanel/icons.ts: DialKit's icon paths.
+- Algorithms ported to Effect and Foldkit: colour parsing and gamut mapping
+  (src/color), Bézier editor geometry (src/bezierEditor), the spring and easing
+  curves (src/curve, src/transition), shortcut steps (src/dialPanel/shortcuts.ts),
+  version naming (src/dialPanel/versions.ts), and timeline sampling and the
+  dock's gestures (src/timeline, src/dialTimeline).
+
+Foldkit UI
+https://github.com/foldkit/foldkit
+MIT License, Copyright (c) 2025 Devin Jameson. Full text: LICENSE.foldkit.
+- src/internal/selectors.ts and src/internal/accessibleName.ts are copied from
+  @foldkit/ui's internal helpers.

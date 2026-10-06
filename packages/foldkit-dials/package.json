@@ -1,0 +1,20 @@
+{
+  "name": "foldkit-dials",
+  "version": "0.1.0",
+  "description": "Live tuning panel for Foldkit apps: dials are Schemas, edits are Messages, versions are Model snapshots",
+  "type": "module",
+  "private": true,
+  "sideEffects": ["*.css"],
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/dials.css"
+  },
+  "peerDependencies": {
+    "@effect/platform-browser": "4.0.0",
+    "@foldkit/ui": ">=0.166.0",
+    "effect": "4.0.0",
+    "foldkit": ">=0.166.0"
+  },
+  "keywords": ["foldkit", "effect", "dialkit", "tuning", "devtools"],
+  "license": "MIT"
+}

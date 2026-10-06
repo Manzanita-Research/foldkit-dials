@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["vite/client"],
+    "paths": {
+      "foldkit-dials": ["./packages/foldkit-dials/src/index.ts"],
+      "foldkit-dials/*": ["./packages/foldkit-dials/src/*"]
+    }
+  },
+  "include": ["packages/foldkit-dials/src", "demo/src", "vite.config.ts", "vitest.config.ts"]
+}

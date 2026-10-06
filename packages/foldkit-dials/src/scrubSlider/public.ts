@@ -1,0 +1,31 @@
+export {
+  init,
+  update,
+  view,
+  isDragging,
+  reflectRange,
+  subscriptions,
+  subscriptionsForRoot,
+  valueFromPointer,
+  sliderId,
+  editorId,
+  FocusEditor,
+  FocusSlider,
+  Model,
+  Message,
+  OutMessage,
+  type PressedTrack,
+  type MovedDragPointer,
+  type ReleasedDragPointer,
+  type CancelledDrag,
+  type PressedKeyboardNavigation,
+  type RequestedEdit,
+  type UpdatedDraft,
+} from './index.js'
+
+export type {
+  InitConfig,
+  ViewInputs,
+  RenderInfo,
+  ScrubSliderAttributes,
+} from './index.js'

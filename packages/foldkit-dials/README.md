@@ -255,7 +255,8 @@ const { card } = IntroDock.valuesOf(model.intro)
 h.div([h.Style({ opacity: `${card.current.opacity}` })], [...])
 ```
 
-Embed the dock as a Submodel, like a panel. Route
+Embed the dock as a Submodel, like a panel. While a floating panel is open,
+the dock stops short of the panel's side, so its controls stay visible. Route
 `IntroDock.isContinuousMessage(message)` Messages under their own tag to keep
 playback frames out of DevTools history. Also available: `Timeline.sequence`,
 `Timeline.tracks`, `Timeline.group`, `Timeline.marker`, loops, and

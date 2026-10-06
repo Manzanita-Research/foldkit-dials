@@ -26,7 +26,10 @@ Runtime.run(
   Runtime.makeApplication({
     ...program,
     container: document.getElementById('root'),
+    // NOTE: DevTools ship in the deployed demo too: every dial edit showing up
+    // as a Message, with time travel, is part of what it demonstrates.
     devTools: {
+      show: 'Always',
       Message: program.Message,
       excludeFromHistory: [
         ...program.excludeFromHistory,

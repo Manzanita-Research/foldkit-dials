@@ -10,14 +10,28 @@ Status: early. Not yet published to npm. Built on `foldkit` 0.166 and `effect` 4
 
 ## Deploy the demo
 
-The demo deploys to a Cloudflare Worker with [Alchemy](https://alchemy.run/cloudflare/frontend/foldkit/). `alchemy.run.ts` declares it as one `Cloudflare.Website.Foldkit`, and Alchemy runs the project's `vite build` and uploads the output as static assets.
+CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cloudflare/frontend/foldkit/):
+
+- **`prod`** on every push to `main`.
+- **A `pr-<n>` preview** for each pull request from this repository. Its URL is commented on the PR and updated on every push. The preview is destroyed when the PR closes.
+
+`alchemy.run.ts` declares the demo as one `Cloudflare.Website.Foldkit`. Alchemy runs the project's `vite build` and uploads the output as static assets. `.github/workflows/deploy.yml` runs it.
+
+### One-time setup: CI's credentials
+
+CI needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as Actions secrets. `stacks/github.ts` creates them as code: it mints a Cloudflare token scoped to this deploy and writes both secrets into the repository. Run it once from a machine with a Cloudflare credential that can create API tokens. Your Global API Key works; a plain "Edit Workers" token does not.
 
 ```sh
-pnpm run deploy    # the first run asks you to sign in to Cloudflare
-pnpm run destroy   # removes the Worker
+pnpm exec alchemy profile create admin
+pnpm exec alchemy profile edit --profile admin    # Cloudflare: your Global API Key; GitHub: "GitHub CLI" (uses your gh login)
+pnpm exec alchemy deploy --config stacks/github.ts --profile admin
 ```
 
-The first deploy also sets up Alchemy's state store in the Cloudflare account. It prints the demo's URL when it finishes.
+Run it again to rotate the token or change its permissions. Alchemy's [CI guide](https://alchemy.run/environments/ci/) explains the pattern.
+
+### Deploy by hand
+
+`pnpm run deploy` deploys your own `live_<user>` stage, and `pnpm run destroy` removes it. Use `pnpm run`, because `pnpm deploy` is a different, built-in pnpm command.
 
 ## Licence
 

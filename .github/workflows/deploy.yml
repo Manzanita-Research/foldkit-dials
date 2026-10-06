@@ -1,0 +1,118 @@
+name: Deploy
+
+# Deploys the demo with Alchemy: `prod` on every push to main, a `pr-<n>`
+# preview for each pull request from this repository (with its URL commented
+# on the PR), and destroys the preview when the PR closes. The Cloudflare
+# credentials come from stacks/github.ts; see the README.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: read
+
+# One deploy per stage at a time; a newer push waits rather than cancelling a
+# deploy halfway.
+concurrency:
+  group: deploy-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: 'true'
+  STAGE: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'prod' }}
+
+jobs:
+  deploy:
+    # Fork PRs get no secrets, so only this repository's own branches deploy.
+    if: github.event.action != 'closed' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PULL_REQUEST: ${{ github.event.number }}
+    steps:
+      - name: Check the deploy credentials are set
+        id: credentials
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set. Deploy stacks/github.ts once (see the README)."
+            exit 1
+          else
+            echo "::notice::No deploy credentials yet, so this PR gets no preview. Deploy stacks/github.ts once (see the README)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: steps.credentials.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.credentials.outputs.ready == 'true'
+        run: pnpm typecheck
+      - if: steps.credentials.outputs.ready == 'true'
+        run: pnpm test
+      - if: steps.credentials.outputs.ready == 'true'
+        name: Deploy with Alchemy
+        run: pnpm exec alchemy deploy --stage "$STAGE" --yes
+
+  cleanup:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PULL_REQUEST: ${{ github.event.number }}
+    steps:
+      - name: Only ever destroy a PR preview
+        run: |
+          if ! [[ "$STAGE" =~ ^pr-[1-9][0-9]*$ ]]; then
+            echo "::error::Cleanup only destroys pr-<number> stages, not $STAGE."
+            exit 1
+          fi
+      - name: Skip when no preview was deployed
+        id: credentials
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: steps.credentials.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.credentials.outputs.ready == 'true'
+        name: Destroy the preview with Alchemy
+        run: pnpm exec alchemy destroy --stage "$STAGE" --yes

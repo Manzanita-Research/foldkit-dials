@@ -1,6 +1,6 @@
 import { Option, Schema, String } from 'effect'
 import { Runtime, Subscription, Update } from 'foldkit'
-import { DialTimeline, Transition } from 'foldkit-dials'
+import { DialTimeline, Frame, Transition } from 'foldkit-dials'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -145,7 +145,7 @@ export const update = (model: Model, message: Message) =>
 
 export const subscriptions = Subscription.aggregate(
   Subscription.make<Model, Message>()(() => ({
-    springFrame: Subscription.animationFrame<Model, Message>({
+    springFrame: Frame.animationFrame<Model, Message>({
       isActive: model => !isAtRest(model.spring),
       toMessage: deltaMs => Message.TickedFrame({ deltaMs }),
     }),

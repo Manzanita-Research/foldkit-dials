@@ -269,6 +269,21 @@ renders through your `toView` callback, so you can use them on their own:
 `ImagePicker`, `TransitionEditor`, and `Curve`. `Color` parses and formats
 colours in OKLCH.
 
+## Smooth frame animations
+
+Foldkit's `Subscription.animationFrame` updates the view on every other
+display frame: its tick lands inside the browser's animation-frame callbacks,
+and the render that tick asks for runs one frame later and absorbs the next
+tick. Use `Frame.animationFrame` instead; it takes the same config and renders
+every frame. The timeline dock uses it.
+
+```ts
+frame: Frame.animationFrame<Model, Message>({
+  isActive: model => model.isPlaying,
+  toMessage: deltaTime => Message.TickedFrame({ deltaTime }),
+}),
+```
+
 ## Parity with DialKit
 
 | Area | DialKit 2.0.2 | foldkit-dials |

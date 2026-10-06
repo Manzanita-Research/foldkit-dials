@@ -1,6 +1,7 @@
 import { Array, Effect, Option, Record, Schema, Stream } from 'effect'
 import * as Subscription from 'foldkit/subscription'
 
+import { animationFrame } from '../frame/index.js'
 import { documentDragStyles } from '../internal/dragStyles.js'
 import { attributeSelector } from '../internal/selectors.js'
 import * as ScrubSlider from '../scrubSlider/index.js'
@@ -54,7 +55,7 @@ const horizontalWheelDelta = (event: WheelEvent): number => {
 }
 
 const dockSubscriptions = Subscription.make<Model, Message>()(entry => ({
-  frame: Subscription.animationFrame<Model, Message>({
+  frame: animationFrame<Model, Message>({
     isActive: model => model.isPlaying,
     toMessage: deltaTime => Message.TickedFrame({ deltaTime }),
   }),

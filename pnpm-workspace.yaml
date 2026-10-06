@@ -1,0 +1,8 @@
+# pnpm 11 refuses packages published less than a day ago. These exact pins were
+# that new when the lockfile was made; the exclusion is safe to drop once they
+# are older than a day.
+minimumReleaseAgeExclude:
+  - '@foldkit/devtools@0.166.0'
+  - '@foldkit/ui@0.166.0'
+  - '@foldkit/vite-plugin@0.26.1'
+  - foldkit@0.166.0

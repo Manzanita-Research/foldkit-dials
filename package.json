@@ -3,11 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@11.22.0",
   "scripts": {
     "dev": "vite",
     "build:demo": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "tooling/lint/node_modules/.bin/oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src demo/src"
   },
   "dependencies": {
     "@effect/platform-browser": "4.0.0",
@@ -18,9 +20,9 @@
   "devDependencies": {
     "@foldkit/devtools": "0.166.0",
     "@foldkit/vite-plugin": "0.26.1",
-    "happy-dom": "^20.14.5",
-    "typescript": "^5.9.3",
-    "vite": "^8.3.1",
-    "vitest": "^5.0.2"
+    "happy-dom": "20.14.5",
+    "typescript": "5.9.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
   }
 }

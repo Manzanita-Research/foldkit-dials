@@ -1,6 +1,7 @@
 // Drives the running demo through Chrome's DevTools protocol and prints what
-// it observes: the panel header toggles both ways, editing a slider value
-// never scrubs it, and a drag writes storage once after it settles.
+// it observes: the panel header toggles both ways, the open panel never
+// covers the dock's controls, editing a slider value never scrubs it, and a
+// drag writes storage once after it settles.
 //
 // Usage, with the demo on :5267 and a headless Chrome on a debug port:
 //   chrome-headless-shell --headless --remote-debugging-port=9333 about:blank &
@@ -103,7 +104,19 @@ await send('Page.addScriptToEvaluateOnNewDocument', {
 await send('Page.navigate', { url: 'http://127.0.0.1:5267/' })
 await sleep(2500)
 
+const dockControlsVisible = () =>
+  evaluate(`(() => {
+    const dock = document.querySelector('.dialkit-timeline')
+    const play = document.querySelector('.dialkit-timeline [aria-label="Play"], .dialkit-timeline [aria-label="Pause"]')
+    if (!dock || !play) return null
+    const rect = play.getBoundingClientRect()
+    const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+    return { isPlayOnTop: play.contains(top), dockRight: Math.round(innerWidth - dock.getBoundingClientRect().right) }
+  })()`)
+
 const results = {}
+
+results.dockWithPanelOpen = await dockControlsVisible()
 
 // 1. Header toggles on click (Floating layout).
 const headerSelector = '[aria-controls][aria-expanded].dialkit-folder-header-top, .dialkit-panel-header button[aria-expanded]'
@@ -112,6 +125,8 @@ const header = await centerOf(headerSelector)
 await click(header.x - 60, header.y)
 await sleep(300)
 results.headerAfterFirstClick = await evaluate(`document.querySelector(${JSON.stringify(headerSelector)})?.getAttribute('aria-expanded')`)
+await sleep(300)
+results.dockWithPanelCollapsed = await dockControlsVisible()
 await shot('cdp-collapsed')
 const collapsedHeader = await centerOf(headerSelector)
 await click(collapsedHeader.x, collapsedHeader.y)

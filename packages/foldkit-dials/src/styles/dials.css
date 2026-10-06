@@ -3068,6 +3068,27 @@
 /* timeline dock fixes (dialTimeline/)                                 */
 /* ------------------------------------------------------------------ */
 
+/* An open floating panel would cover the dock's end, where play, replay, and
+   copy sit. The dock stops short of the panel's side instead: the panel's
+   16px inset, its 280px width (PANEL_WIDTH), and a 12px gap. */
+.dialkit-timeline {
+  transition: left 0.2s ease, right 0.2s ease;
+}
+
+:root:has(.dialkit-panel[data-mode="popover"][data-position$="right"] .dialkit-panel-inner[data-collapsed="false"]) .dialkit-timeline {
+  right: calc(16px + 280px + 12px);
+}
+
+:root:has(.dialkit-panel[data-mode="popover"][data-position$="left"] .dialkit-panel-inner[data-collapsed="false"]) .dialkit-timeline {
+  left: calc(16px + 280px + 12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialkit-timeline {
+    transition: none;
+  }
+}
+
 /* Disclosure panels wrap rows without adding a box, so rows stay items of
    the timeline grid. */
 .fkd-timeline-rows {

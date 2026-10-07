@@ -1,0 +1,15 @@
+// The demo: one Worker that serves the built app as static assets. CI deploys
+// production on main and uploads a preview version for each pull request.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "foldkit-dials",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist/demo",
+    // Foldkit routes on the client, so deep links serve index.html.
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [{ "pattern": "foldkit-dials.manzanita.dev", "custom_domain": true }],
+  "workers_dev": true,
+  "preview_urls": true
+}

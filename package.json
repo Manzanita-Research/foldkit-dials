@@ -9,9 +9,7 @@
     "build:demo": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "lint": "tooling/lint/node_modules/.bin/oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src demo/src",
-    "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy"
+    "lint": "tooling/lint/node_modules/.bin/oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src demo/src"
   },
   "dependencies": {
     "@effect/platform-browser": "4.0.0",
@@ -21,13 +19,11 @@
     "foldkit": "0.166.0"
   },
   "devDependencies": {
-    "@alchemy.run/frontend-frameworks": "2.0.0-beta.80",
-    "@effect/platform-node": "4.0.0",
     "@foldkit/vite-plugin": "0.26.1",
-    "alchemy": "2.0.0-beta.80",
     "happy-dom": "20.14.5",
     "typescript": "5.9.3",
     "vite": "8.3.1",
-    "vitest": "5.0.3"
+    "vitest": "5.0.3",
+    "wrangler": "4.148.0"
   }
 }

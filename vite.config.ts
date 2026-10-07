@@ -3,7 +3,18 @@ import { resolve } from 'node:path'
 import { foldkit } from '@foldkit/vite-plugin'
 import { type Plugin, defineConfig } from 'vite'
 
+const demoRoot = resolve(import.meta.dirname, 'demo')
 const packageSource = resolve(import.meta.dirname, 'packages/foldkit-dials/src')
+
+// NOTE: Alchemy's `Cloudflare.Website.Foldkit` builds with the project
+// directory as Vite's inline `root`, which overrides `root` below, so the
+// build cannot find `demo/index.html`. A config hook runs after that merge
+// and puts the root back.
+const keepDemoRoot = (): Plugin => ({
+  name: 'keep-demo-root',
+  enforce: 'pre',
+  config: () => ({ root: demoRoot }),
+})
 
 // NOTE: @foldkit/vite-plugin 0.26.1 pre-bundles `foldkit/devtools-host` while
 // it serves `foldkit` from source, so the DevTools overlay registers on a
@@ -20,8 +31,8 @@ const serveDevToolsHostFromSource = (): Plugin => ({
 })
 
 export default defineConfig({
-  root: resolve(import.meta.dirname, 'demo'),
-  plugins: [foldkit(), serveDevToolsHostFromSource()],
+  root: demoRoot,
+  plugins: [keepDemoRoot(), foldkit(), serveDevToolsHostFromSource()],
   resolve: {
     alias: [
       { find: /^foldkit-dials\/styles\.css$/, replacement: resolve(packageSource, 'styles/dials.css') },

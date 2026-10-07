@@ -5,10 +5,8 @@ import * as Output from 'alchemy/Output'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-// The demo, deployed as static assets on a Cloudflare Worker. Alchemy runs
-// this project's own `vite build` (its root is `demo/`) and uploads the
-// client output; deep links fall back to `index.html`.
-export const Demo = Cloudflare.Website.Foldkit('Demo')
+// Production's Worker name, so the demo lives at a stable workers.dev URL.
+const productionWorker = 'foldkit-dials'
 
 export default Alchemy.Stack(
   'FoldkitDials',
@@ -17,7 +15,14 @@ export default Alchemy.Stack(
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
-    const demo = yield* Demo
+    const stage = yield* Alchemy.Stage
+    // The demo, deployed as static assets on a Cloudflare Worker. Alchemy runs
+    // this project's own `vite build` (its root is `demo/`) and uploads the
+    // client output; deep links fall back to `index.html`.
+    const demo = yield* Cloudflare.Website.Foldkit(
+      'Demo',
+      stage === 'prod' ? { name: productionWorker } : {},
+    )
     const github = yield* GitHub.GitHubEnv
 
     // A pull request's `pr-<n>` stage gets a comment with its preview URL,

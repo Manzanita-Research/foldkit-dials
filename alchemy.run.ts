@@ -19,9 +19,18 @@ export default Alchemy.Stack(
     // The demo, deployed as static assets on a Cloudflare Worker. Alchemy runs
     // this project's own `vite build` (its root is `demo/`) and uploads the
     // client output; deep links fall back to `index.html`.
+    //
+    // A `pr-<n>` stage uploads a version of the production Worker instead of
+    // creating its own, like Cloudflare's Git integration. The version takes
+    // no traffic; its aliased preview URL is `pr-<n>-foldkit-dials.<subdomain>
+    // .workers.dev`, and each push re-points it.
     const demo = yield* Cloudflare.Website.Foldkit(
       'Demo',
-      stage === 'prod' ? { name: productionWorker } : {},
+      stage === 'prod'
+        ? { name: productionWorker }
+        : stage.startsWith('pr-')
+          ? { version: { parent: productionWorker, alias: stage } }
+          : {},
     )
     const github = yield* GitHub.GitHubEnv
 

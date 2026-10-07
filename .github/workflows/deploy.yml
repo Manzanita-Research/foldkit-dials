@@ -1,8 +1,9 @@
 name: Deploy
 
 # Deploys the demo with Alchemy: `prod` on every push to main, a `pr-<n>`
-# preview for each pull request from this repository (with its URL commented
-# on the PR), and destroys the preview when the PR closes. The Cloudflare
+# preview version of the production Worker for each pull request from this
+# repository (with its URL commented on the PR), and destroys the preview's
+# stage when the PR closes. The Cloudflare
 # credentials are Manzanita-Research organization secrets; see the README.
 
 on:

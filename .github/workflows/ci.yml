@@ -39,3 +39,6 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build:demo
+      # The npm package: build it, and list the files `npm publish` would ship.
+      - run: npm run build && npm pack --dry-run
+        working-directory: packages/foldkit-dials

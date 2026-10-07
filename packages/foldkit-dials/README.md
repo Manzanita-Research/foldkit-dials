@@ -30,9 +30,17 @@ export const CardDials = DialPanel.make({
 The tuning is a normal Schema field in your Model, typed and decoded like any
 other. `CardDials.defaults` is its initial value.
 
-> Status: private, version 0.1.0. Not published. Peer dependencies: `foldkit`
-> and `@foldkit/ui` 0.166 or later, `effect` and `@effect/platform-browser`
-> 4.0.0.
+> Status: early, version 0.1.0.
+
+## Install
+
+```sh
+npm install foldkit-dials
+```
+
+Peer dependencies: `foldkit` and `@foldkit/ui` 0.166 or later, and `effect` 4.
+A Foldkit app already has them. The package ships ES modules with type
+declarations, and the stylesheet is `foldkit-dials/styles.css`.
 
 ## Attach a panel
 

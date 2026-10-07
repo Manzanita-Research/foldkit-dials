@@ -3,18 +3,31 @@
   "version": "0.1.0",
   "description": "Live tuning panel for Foldkit apps: dials are Schemas, edits are Messages, versions are Model snapshots",
   "type": "module",
-  "private": true,
   "sideEffects": ["*.css"],
   "exports": {
-    ".": "./src/index.ts",
-    "./styles.css": "./src/styles/dials.css"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles/dials.css"
+  },
+  "files": ["dist", "NOTICE", "LICENSE.dialkit", "LICENSE.foldkit"],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && mkdir -p dist/styles && cp src/styles/dials.css dist/styles/",
+    "prepublishOnly": "npm run build && npm test --prefix ../.."
   },
   "peerDependencies": {
-    "@effect/platform-browser": "4.0.0",
     "@foldkit/ui": ">=0.166.0",
-    "effect": "4.0.0",
+    "effect": "^4.0.0",
     "foldkit": ">=0.166.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Manzanita-Research/foldkit-dials.git",
+    "directory": "packages/foldkit-dials"
+  },
+  "homepage": "https://github.com/Manzanita-Research/foldkit-dials/tree/main/packages/foldkit-dials#readme",
+  "bugs": "https://github.com/Manzanita-Research/foldkit-dials/issues",
   "keywords": ["foldkit", "effect", "dialkit", "tuning", "devtools"],
   "license": "MIT"
 }

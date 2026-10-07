@@ -1,6 +1,8 @@
 foldkit-dials
 
 This package contains material from the following projects.
+Paths below are in the source repository. The npm package ships them compiled
+under dist/.
 
 DialKit
 https://github.com/joshpuckett/dialkit

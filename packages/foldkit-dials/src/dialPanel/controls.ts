@@ -11,7 +11,8 @@ import { Message } from './message.js'
 import type { Model, ToggleOption } from './model.js'
 
 /** Module-scoped bundles, as the lint rule for selection factories asks. */
-export const ToggleGroup = RadioGroup.create<ToggleOption>()
+export const ToggleGroup: RadioGroup.Bundle<ToggleOption> =
+  RadioGroup.create<ToggleOption>()
 export const SelectListbox = Listbox.create<string>()
 
 type Children<ChildModel> = Readonly<Record<string, ChildModel>>

@@ -255,7 +255,8 @@ const { card } = IntroDock.valuesOf(model.intro)
 h.div([h.Style({ opacity: `${card.current.opacity}` })], [...])
 ```
 
-Embed the dock as a Submodel, like a panel. Route
+Embed the dock as a Submodel, like a panel. While a floating panel is open,
+the dock stops short of the panel's side, so its controls stay visible. Route
 `IntroDock.isContinuousMessage(message)` Messages under their own tag to keep
 playback frames out of DevTools history. Also available: `Timeline.sequence`,
 `Timeline.tracks`, `Timeline.group`, `Timeline.marker`, loops, and
@@ -268,6 +269,21 @@ renders through your `toView` callback, so you can use them on their own:
 `ScrubSlider`, `DialPad`, `BezierEditor`, `ColorPicker`, `ColorField`,
 `ImagePicker`, `TransitionEditor`, and `Curve`. `Color` parses and formats
 colours in OKLCH.
+
+## Smooth frame animations
+
+Foldkit's `Subscription.animationFrame` updates the view on every other
+display frame: its tick lands inside the browser's animation-frame callbacks,
+and the render that tick asks for runs one frame later and absorbs the next
+tick. Use `Frame.animationFrame` instead; it takes the same config and renders
+every frame. The timeline dock uses it.
+
+```ts
+frame: Frame.animationFrame<Model, Message>({
+  isActive: model => model.isPlaying,
+  toMessage: deltaTime => Message.TickedFrame({ deltaTime }),
+}),
+```
 
 ## Parity with DialKit
 

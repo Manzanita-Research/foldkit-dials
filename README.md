@@ -13,7 +13,7 @@ Status: early. Not yet published to npm. Built on `foldkit` 0.166 and `effect` 4
 CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cloudflare/frontend/foldkit/):
 
 - **`prod`** on every push to `main`, at https://foldkit-dials.manzanita.workers.dev.
-- **A `pr-<n>` preview** for each pull request from this repository. Its URL is commented on the PR and updated on every push. The preview is destroyed when the PR closes.
+- **A `pr-<n>` preview** for each pull request from this repository, at `https://pr-<n>-foldkit-dials.manzanita.workers.dev`. It is a version of the production Worker that takes no traffic, as with Cloudflare's Git integration. Its URL is commented on the PR, and each push re-points it. Cloudflare can't delete versions, so after the PR closes the URL keeps serving its last version.
 
 `alchemy.run.ts` declares the demo as one `Cloudflare.Website.Foldkit`. Alchemy runs the project's `vite build` and uploads the output as static assets. `.github/workflows/deploy.yml` runs it.
 

@@ -17,17 +17,9 @@ CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cl
 
 `alchemy.run.ts` declares the demo as one `Cloudflare.Website.Foldkit`. Alchemy runs the project's `vite build` and uploads the output as static assets. `.github/workflows/deploy.yml` runs it.
 
-### One-time setup: CI's credentials
+### CI's credentials
 
-CI needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as Actions secrets. `stacks/github.ts` creates them as code: it mints a Cloudflare token scoped to this deploy and writes both secrets into the repository. Run it once from a machine with a Cloudflare credential that can create API tokens. Your Global API Key works; a plain "Edit Workers" token does not.
-
-```sh
-pnpm exec alchemy profile create admin
-pnpm exec alchemy profile edit --profile admin    # Cloudflare: your Global API Key; GitHub: "GitHub CLI" (uses your gh login)
-pnpm exec alchemy deploy --config stacks/github.ts --profile admin
-```
-
-Run it again to rotate the token or change its permissions. Alchemy's [CI guide](https://alchemy.run/environments/ci/) explains the pattern.
+The deploy reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the Manzanita-Research organization's Actions secrets, so this repository needs no secrets of its own. The token needs these account permissions: Workers Scripts Edit, Account Settings Edit, and Secrets Store Edit. Alchemy keeps its state in the account's Secrets Store.
 
 ### Deploy by hand
 

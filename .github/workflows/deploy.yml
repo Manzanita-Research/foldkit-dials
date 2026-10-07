@@ -3,7 +3,7 @@ name: Deploy
 # Deploys the demo with Alchemy: `prod` on every push to main, a `pr-<n>`
 # preview for each pull request from this repository (with its URL commented
 # on the PR), and destroys the preview when the PR closes. The Cloudflare
-# credentials come from stacks/github.ts; see the README.
+# credentials are Manzanita-Research organization secrets; see the README.
 
 on:
   push:
@@ -45,10 +45,10 @@ jobs:
           if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set. Deploy stacks/github.ts once (see the README)."
+            echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set. Set them as organization or repository secrets (see the README)."
             exit 1
           else
-            echo "::notice::No deploy credentials yet, so this PR gets no preview. Deploy stacks/github.ts once (see the README)."
+            echo "::notice::No deploy credentials yet, so this PR gets no preview. Set them as organization or repository secrets (see the README)."
             echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
       - if: steps.credentials.outputs.ready == 'true'

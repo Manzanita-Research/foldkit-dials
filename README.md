@@ -6,7 +6,7 @@ Live tuning controls for [Foldkit](https://foldkit.dev) apps, after Josh Puckett
 - **Demo app:** [`demo/`](demo). Run `pnpm install`, then `pnpm dev`.
 - **Tests:** `pnpm test` (Vitest, with Foldkit Story and Scene tests). Typecheck: `pnpm typecheck`.
 
-Status: early. Not yet published to npm. Built on `foldkit` 0.166 and `effect` 4.0.
+Install with `npm install foldkit-dials`. Status: early (0.1.0). Built on `foldkit` 0.166 and `effect` 4.0.
 
 ## Licence
 

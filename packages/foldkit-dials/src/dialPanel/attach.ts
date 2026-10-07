@@ -105,6 +105,8 @@ const isShown = (show: Show): boolean => {
  *  The app keeps its own Model, Messages, update, and view. Its tuning field
  *  stays the single source of the values: the panel reads it and writes
  *  edits back through `write`. The wrapper Model is `{ app, dials }`. */
+// TODO: give `attach` an explicit return type. Inferred, it inlines the
+// panel's whole Model schema, so dist/dialPanel/attach.d.ts is about 500 KB.
 export const attach = <
   AppModel,
   AppMessage extends Readonly<{ _tag: string }>,

@@ -422,7 +422,8 @@ export const foldEditorSlider = ({
 
 /** The RadioGroup bundle behind the editor's Easing, Time, and Physics
  *  switch. */
-export const ModeGroup = RadioGroup.create<TransitionMode>()
+export const ModeGroup: RadioGroup.Bundle<TransitionMode> =
+  RadioGroup.create<TransitionMode>()
 
 const foldModeOutMessage = (
   outMessage: RadioGroup.OutMessage<TransitionMode>,

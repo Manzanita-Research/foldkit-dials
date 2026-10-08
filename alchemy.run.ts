@@ -5,8 +5,9 @@ import * as Output from 'alchemy/Output'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-// Production's Worker name, so the demo lives at a stable workers.dev URL.
+// Production is one Worker, served on its custom domain.
 const productionWorker = 'foldkit-dials'
+const productionDomain = 'foldkit-dials.manzanita.dev'
 
 export default Alchemy.Stack(
   'FoldkitDials',
@@ -27,7 +28,7 @@ export default Alchemy.Stack(
     const demo = yield* Cloudflare.Website.Foldkit(
       'Demo',
       stage === 'prod'
-        ? { name: productionWorker }
+        ? { name: productionWorker, domain: productionDomain }
         : stage.startsWith('pr-')
           ? { version: { parent: productionWorker, alias: stage } }
           : {},

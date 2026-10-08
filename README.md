@@ -15,7 +15,7 @@ CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cl
 - **`prod`** on every push to `main`: the `foldkit-dials` Worker, at https://foldkit-dials.manzanita.dev.
 - **A `pr-<n>` preview** for each pull request from this repository, at `https://pr-<n>-foldkit-dials.manzanita.workers.dev`. It is a version of the production Worker that takes no traffic, as with Cloudflare's Git integration. Its URL is commented on the PR, and each push re-points it. Cloudflare can't delete versions, so after the PR closes the URL keeps serving its last version.
 
-`alchemy.run.ts` declares the demo as one `Cloudflare.Website.Foldkit`. Alchemy runs the project's `vite build` and uploads the output as static assets. `.github/workflows/deploy.yml` runs it.
+`alchemy.run.ts` declares the demo as one `Cloudflare.Worker` that serves the output of `pnpm build:demo` as static assets. `.github/workflows/deploy.yml` builds the demo, then runs `alchemy deploy`.
 
 ### CI's credentials
 

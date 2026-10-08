@@ -17,22 +17,23 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const stage = yield* Alchemy.Stage
-    // The demo, deployed as static assets on a Cloudflare Worker. Alchemy runs
-    // this project's own `vite build` (its root is `demo/`) and uploads the
-    // client output; deep links fall back to `index.html`.
-    //
-    // A `pr-<n>` stage uploads a version of the production Worker instead of
-    // creating its own, like Cloudflare's Git integration. The version takes
-    // no traffic; its aliased preview URL is `pr-<n>-foldkit-dials.<subdomain>
-    // .workers.dev`, and each push re-points it.
-    const demo = yield* Cloudflare.Website.Foldkit(
-      'Demo',
-      stage === 'prod'
+    // The demo is one Worker that serves the app `pnpm build:demo` built into
+    // dist/demo. Production deploys it as `foldkit-dials` on its domain. A
+    // `pr-<n>` stage uploads a version of that same Worker instead of creating
+    // its own, like Cloudflare's Git integration: the version takes no traffic,
+    // its preview URL is `pr-<n>-foldkit-dials.<subdomain>.workers.dev`, and
+    // each push re-points it.
+    const demo = yield* Cloudflare.Worker('Demo', {
+      // NOTE: a version upload needs an entry module, so the Worker has a
+      // `main` even though the demo is static.
+      main: './worker.ts',
+      assets: { directory: './dist/demo', notFoundHandling: 'single-page-application' },
+      ...(stage === 'prod'
         ? { name: productionWorker, domain: productionDomain }
         : stage.startsWith('pr-')
           ? { version: { parent: productionWorker, alias: stage } }
-          : {},
-    )
+          : {}),
+    })
     const github = yield* GitHub.GitHubEnv
 
     // A pull request's `pr-<n>` stage gets a comment with its preview URL,

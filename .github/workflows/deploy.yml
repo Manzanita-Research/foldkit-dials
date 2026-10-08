@@ -70,6 +70,8 @@ jobs:
       - if: steps.credentials.outputs.ready == 'true'
         run: pnpm test
       - if: steps.credentials.outputs.ready == 'true'
+        run: pnpm build:demo
+      - if: steps.credentials.outputs.ready == 'true'
         name: Deploy with Alchemy
         run: pnpm exec alchemy deploy --stage "$STAGE" --yes
 

@@ -10,12 +10,20 @@ Status: early. Not yet published to npm. Built on `foldkit` 0.166 and `effect` 4
 
 ## Deploy the demo
 
-The demo is one Cloudflare Worker, `foldkit-dials`, configured in `wrangler.jsonc`. It serves the built app as static assets. `.github/workflows/deploy.yml` deploys it with wrangler:
+CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cloudflare/frontend/foldkit/):
 
-- **Production:** every push to `main` runs `wrangler deploy`. The demo is at https://foldkit-dials.manzanita.dev.
-- **Pull request previews:** each pull request from this repository runs `wrangler versions upload --preview-alias pr-<n>`. That uploads a version of the same Worker that takes no traffic, at `https://pr-<n>-foldkit-dials.manzanita.workers.dev`. The URL is commented on the PR, and each push re-points it. Cloudflare can't delete versions, so the URL keeps serving the PR's last version after the PR closes.
+- **`prod`** on every push to `main`, at https://foldkit-dials.manzanita.workers.dev.
+- **A `pr-<n>` preview** for each pull request from this repository. Its URL is commented on the PR and updated on every push. The preview is destroyed when the PR closes.
 
-The deploy reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the Manzanita-Research organization's Actions secrets, so this repository needs no secrets of its own.
+`alchemy.run.ts` declares the demo as one `Cloudflare.Website.Foldkit`. Alchemy runs the project's `vite build` and uploads the output as static assets. `.github/workflows/deploy.yml` runs it.
+
+### CI's credentials
+
+The deploy reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the Manzanita-Research organization's Actions secrets, so this repository needs no secrets of its own. The token needs these account permissions: Workers Scripts Edit, Account Settings Edit, and Secrets Store Edit. Alchemy keeps its state in the account's Secrets Store.
+
+### Deploy by hand
+
+`pnpm run deploy` deploys your own `live_<user>` stage, and `pnpm run destroy` removes it. Use `pnpm run`, because `pnpm deploy` is a different, built-in pnpm command.
 
 ## Licence
 

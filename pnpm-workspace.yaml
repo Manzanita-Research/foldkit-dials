@@ -1,5 +1,5 @@
 # Install scripts stay off. esbuild's binary arrives as an optional
-# dependency, and workerd's download is only needed by `wrangler dev`'s local
+# dependency, and workerd's download is only needed by `alchemy dev`'s local
 # runtime, not to deploy.
 allowBuilds:
   esbuild: false

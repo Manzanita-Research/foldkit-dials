@@ -8,6 +8,7 @@
     "dev": "vite",
     "build:demo": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:panel-consumer": "node tooling/check-panel-types.mjs",
     "test": "vitest run",
     "lint": "tooling/lint/node_modules/.bin/oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src demo/src",
     "deploy": "alchemy deploy",

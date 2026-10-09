@@ -1,7 +1,7 @@
 import { Array, Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { Document, Html, HtmlBuilder } from 'foldkit/html'
-import { defineMessageUnion } from 'foldkit/message'
+import { type MessageUnion, defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 import * as Subscription from 'foldkit/subscription'
 
@@ -15,7 +15,10 @@ import type { Corner, Layout, Model as PanelModel, Theme } from './model.js'
 /** The Messages `attach` adds to a program. Gesture frames, such as each
  *  pointer move of a slider drag, arrive as `GotDialPanelDragMessage`, so
  *  DevTools can leave them out of its history with `excludeFromHistory`. */
-export const AttachMessage = defineMessageUnion({
+export const AttachMessage: MessageUnion<{
+  readonly GotDialPanelMessage: Readonly<{ message: typeof PanelMessage }>
+  readonly GotDialPanelDragMessage: Readonly<{ message: typeof PanelMessage }>
+}> = defineMessageUnion({
   GotDialPanelMessage: { message: PanelMessage },
   GotDialPanelDragMessage: { message: PanelMessage },
 })
@@ -73,6 +76,46 @@ export type AttachConfig<
   layout?: Exclude<Layout, 'Section'>
 }>
 
+/** The wrapper's Model, keeping the app state beside the panel state. */
+export type AttachModel<AppModel> = Readonly<{
+  app: AppModel
+  dials: PanelModel
+}>
+
+/** A wrapped program with the app's init arguments, Model, and Messages. */
+export type AttachBundle<
+  AppModel,
+  AppMessage,
+  InitArgs extends ReadonlyArray<unknown>,
+> = Readonly<{
+  Model: Schema.Struct<{
+    readonly app: AttachableProgram<AppModel, AppMessage, InitArgs>['Model']
+    readonly dials: typeof PanelModel
+  }>
+  Message: Schema.Union<
+    readonly [
+      AttachableProgram<AppModel, AppMessage, InitArgs>['Message'],
+      typeof AttachMessage,
+    ]
+  >
+  init: (
+    ...args: InitArgs
+  ) => Update.Return<AttachModel<AppModel>, AppMessage | AttachMessage>
+  update: (
+    model: AttachModel<AppModel>,
+    message: AppMessage | AttachMessage,
+  ) => Update.Return<AttachModel<AppModel>, AppMessage | AttachMessage>
+  view: (
+    model: AttachModel<AppModel>,
+    h: HtmlBuilder<AppMessage | AttachMessage>,
+  ) => Document
+  subscriptions: Subscription.Subscriptions<
+    AttachModel<AppModel>,
+    AppMessage | AttachMessage
+  >
+  excludeFromHistory: Array<string>
+}>
+
 const isShown = (show: Show): boolean => {
   if (show === 'Always') {
     return true
@@ -105,8 +148,6 @@ const isShown = (show: Show): boolean => {
  *  The app keeps its own Model, Messages, update, and view. Its tuning field
  *  stays the single source of the values: the panel reads it and writes
  *  edits back through `write`. The wrapper Model is `{ app, dials }`. */
-// TODO: give `attach` an explicit return type. Inferred, it inlines the
-// panel's whole Model schema, so dist/dialPanel/attach.d.ts is about 500 KB.
 export const attach = <
   AppModel,
   AppMessage extends Readonly<{ _tag: string }>,
@@ -115,7 +156,7 @@ export const attach = <
 >(
   program: AttachableProgram<AppModel, AppMessage, InitArgs>,
   config: AttachConfig<AppModel, AppMessage, Fields>,
-) => {
+): AttachBundle<AppModel, AppMessage, InitArgs> => {
   type Message = AppMessage | AttachMessage
   const { panel } = config
   const isPanelShown = isShown(config.show ?? 'Development')

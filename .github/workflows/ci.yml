@@ -42,3 +42,4 @@ jobs:
       # The npm package: build it, and list the files `npm publish` would ship.
       - run: npm run build && npm pack --dry-run
         working-directory: packages/foldkit-dials
+      - run: node tooling/check-panel-types.mjs

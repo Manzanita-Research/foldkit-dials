@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@pleat/foldkit>@pleat/core': github:Manzanita-Research/pleat#1e24c0933de70edac72ae4669d7376a6e14d7033&path:/packages/core
+
 importers:
 
   .:
@@ -17,6 +20,12 @@ importers:
       '@foldkit/ui':
         specifier: 0.166.0
         version: 0.166.0(effect@4.0.0)(foldkit@0.166.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0))
+      '@pleat/core':
+        specifier: github:Manzanita-Research/pleat#1e24c0933de70edac72ae4669d7376a6e14d7033&path:/packages/core
+        version: https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/core(effect@4.0.0)
+      '@pleat/foldkit':
+        specifier: github:Manzanita-Research/pleat#1e24c0933de70edac72ae4669d7376a6e14d7033&path:/packages/foldkit
+        version: https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/foldkit(effect@4.0.0)(foldkit@0.166.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0))
       effect:
         specifier: 4.0.0
         version: 4.0.0
@@ -826,6 +835,19 @@ packages:
   '@oxc-project/types@0.152.0':
     resolution: {integrity: sha512-oM/5rLBm2tPkg0iBgkH/FOeR3PCDpY19GTgAZjMFM8h9WI9VW7cLgzp6nwtarYKmovavIQZ+Fe/RKX/8C8O/Rw==}
 
+  '@pleat/core@https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/core':
+    resolution: {gitHosted: true, path: /packages/core, tarball: https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033}
+    version: 0.1.0
+    peerDependencies:
+      effect: ^4.0.0
+
+  '@pleat/foldkit@https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/foldkit':
+    resolution: {gitHosted: true, path: /packages/foldkit, tarball: https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033}
+    version: 0.1.0
+    peerDependencies:
+      effect: ^4.0.0
+      foldkit: '>=0.165.0'
+
   '@prisma/debug@7.2.0':
     resolution: {integrity: sha512-YSGTiSlBAVJPzX4ONZmMotL+ozJwQjRmZweQNIq/ER0tQJKJynNkRB3kyvt37eOfsbMCXk3gnLF6J9OJ4QWftw==}
 
@@ -1236,6 +1258,9 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  csstype@3.2.3:
+    resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
   detect-libc@2.0.2:
     resolution: {integrity: sha512-UX6sGumvvqSaXgdKGUsgZWqcUyIXZ/vZTrlRT/iobiKhGL0zL4d3osHj3uqllWJK+i+sixDS/3COVEOFbupFyw==}
@@ -2382,6 +2407,17 @@ snapshots:
 
   '@oxc-project/types@0.152.0': {}
 
+  '@pleat/core@https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/core(effect@4.0.0)':
+    dependencies:
+      csstype: 3.2.3
+      effect: 4.0.0
+
+  '@pleat/foldkit@https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/foldkit(effect@4.0.0)(foldkit@0.166.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0))':
+    dependencies:
+      '@pleat/core': https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/core(effect@4.0.0)
+      effect: 4.0.0
+      foldkit: 0.166.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0)
+
   '@prisma/debug@7.2.0': {}
 
   '@prisma/dev@0.20.0(typescript@5.9.3)':
@@ -2667,6 +2703,8 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  csstype@3.2.3: {}
 
   detect-libc@2.0.2: {}
 

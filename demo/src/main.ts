@@ -78,7 +78,9 @@ const springToward = (model: Model, target: number): SpringState =>
     ? restingAt(target)
     : modifyFields(model.spring, { target: () => target })
 
-const foldIntroOutMessage = IntroDock.OutMessage.match<Update.Step<Model, Message>>({
+const foldIntroOutMessage = IntroDock.OutMessage.match<
+  Update.Step<Model, Message>
+>({
   ChangedVisibility: () => model => ({ model }),
 })
 
@@ -136,8 +138,10 @@ export const update = (model: Model, message: Message) =>
       isReducedMotion
         ? reduceMotion(model)
         : { model: modifyFields(model, { isReducedMotion: () => false }) },
-    GotIntroMessage: ({ message: introMessage }) => foldIntro(model, introMessage),
-    GotIntroFrameMessage: ({ message: introMessage }) => foldIntro(model, introMessage),
+    GotIntroMessage: ({ message: introMessage }) =>
+      foldIntro(model, introMessage),
+    GotIntroFrameMessage: ({ message: introMessage }) =>
+      foldIntro(model, introMessage),
   })
 
 // SUBSCRIPTION
@@ -250,7 +254,9 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
                         ),
                         Var.bind(
                           Styles.live.cover,
-                          tuning.cover === '' ? 'none' : `url("${tuning.cover}")`,
+                          tuning.cover === ''
+                            ? 'none'
+                            : `url("${tuning.cover}")`,
                         ),
                         Var.bind(
                           Styles.live.glowX,
@@ -288,11 +294,17 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
                       ),
                       h.span(
                         [...css(Styles.description)],
-                        ['Dial in colors, spacing, and motion. Every edit is a Message, ready for DevTools and time travel.'],
+                        [
+                          'Dial in colors, spacing, and motion. Every edit is a Message, ready for DevTools and time travel.',
+                        ],
                       ),
                       h.span(
                         [...css(Styles.hint)],
-                        [model.isLifted ? 'Click to drop. Try the dials →' : 'Click to lift. Try the dials →'],
+                        [
+                          model.isLifted
+                            ? 'Click to drop. Try the dials →'
+                            : 'Click to lift. Try the dials →',
+                        ],
                       ),
                     ],
                   ),
@@ -309,11 +321,19 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
               [...css(Styles.linkRow)],
               [
                 h.a(
-                  [h.Href('https://github.com/Manzanita-Research/foldkit-dials/tree/main/packages/foldkit-dials#readme'), ...css(Styles.pleatLink)],
+                  [
+                    h.Href(
+                      'https://github.com/Manzanita-Research/foldkit-dials/tree/main/packages/foldkit-dials#readme',
+                    ),
+                    ...css(Styles.pleatLink),
+                  ],
                   ['Docs & source'],
                 ),
                 ' · ',
-                h.a([h.Href('https://foldkit.dev'), ...css(Styles.pleatLink)], ['Built for Foldkit']),
+                h.a(
+                  [h.Href('https://foldkit.dev'), ...css(Styles.pleatLink)],
+                  ['Built for Foldkit'],
+                ),
               ],
             ),
           ],

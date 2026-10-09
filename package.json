@@ -11,8 +11,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typecheck:panel-consumer": "node tooling/check-panel-types.mjs",
     "test": "vitest run",
-    "lint": "oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src demo/src",
+    "lint": "oxlint --disable-nested-config -c .oxlintrc.json . && oxlint --disable-nested-config -c oxlint.foldkit.json packages/foldkit-dials/src demo/src",
     "format": "oxfmt -c .oxfmtrc.json --write",
+    "format:check": "oxfmt -c .oxfmtrc.json --check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:demo && pnpm build:library && pnpm --filter foldkit-dials pack --dry-run && pnpm typecheck:panel-consumer",
     "deploy": "pnpm --filter @foldkit-dials/demo run deploy",
     "destroy": "pnpm --filter @foldkit-dials/demo run destroy"
   },

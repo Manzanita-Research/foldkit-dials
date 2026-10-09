@@ -71,7 +71,8 @@ const key = async (keyName, code = keyName, text) => {
     type: text ? 'keyDown' : 'rawKeyDown',
     key: keyName,
     code,
-    windowsVirtualKeyCode: { Enter: 13, ArrowLeft: 37, Home: 36, Backspace: 8 }[keyName] ?? 0,
+    windowsVirtualKeyCode:
+      { Enter: 13, ArrowLeft: 37, Home: 36, Backspace: 8 }[keyName] ?? 0,
     ...(text ? { text } : {}),
   })
   await send('Input.dispatchKeyEvent', { type: 'keyUp', key: keyName, code })
@@ -119,23 +120,32 @@ const results = {}
 results.dockWithPanelOpen = await dockControlsVisible()
 
 // 1. Header toggles on click (Floating layout).
-const headerSelector = '[aria-controls][aria-expanded].dialkit-folder-header-top, .dialkit-panel-header button[aria-expanded]'
-results.headerBefore = await evaluate(`document.querySelector(${JSON.stringify(headerSelector)})?.getAttribute('aria-expanded')`)
+const headerSelector =
+  '[aria-controls][aria-expanded].dialkit-folder-header-top, .dialkit-panel-header button[aria-expanded]'
+results.headerBefore = await evaluate(
+  `document.querySelector(${JSON.stringify(headerSelector)})?.getAttribute('aria-expanded')`,
+)
 const header = await centerOf(headerSelector)
 await click(header.x - 60, header.y)
 await sleep(300)
-results.headerAfterFirstClick = await evaluate(`document.querySelector(${JSON.stringify(headerSelector)})?.getAttribute('aria-expanded')`)
+results.headerAfterFirstClick = await evaluate(
+  `document.querySelector(${JSON.stringify(headerSelector)})?.getAttribute('aria-expanded')`,
+)
 await sleep(300)
 results.dockWithPanelCollapsed = await dockControlsVisible()
 await shot('cdp-collapsed')
 const collapsedHeader = await centerOf(headerSelector)
 await click(collapsedHeader.x, collapsedHeader.y)
 await sleep(400)
-results.headerAfterSecondClick = await evaluate(`document.querySelector(${JSON.stringify(headerSelector)})?.getAttribute('aria-expanded')`)
+results.headerAfterSecondClick = await evaluate(
+  `document.querySelector(${JSON.stringify(headerSelector)})?.getAttribute('aria-expanded')`,
+)
 
 // 2. Clicking the Radius value opens the editor without scrubbing.
 const radiusSlider = `[role="slider"][aria-labelledby]`
-const radiusBefore = await evaluate(`[...document.querySelectorAll('${radiusSlider}')].find(s => s.getAttribute('aria-valuetext') === '20')?.getAttribute('aria-valuenow')`)
+const radiusBefore = await evaluate(
+  `[...document.querySelectorAll('${radiusSlider}')].find(s => s.getAttribute('aria-valuetext') === '20')?.getAttribute('aria-valuenow')`,
+)
 results.radiusBefore = radiusBefore
 const valueCenter = await evaluate(`(() => {
   const value = [...document.querySelectorAll('[data-scrub-slider-value]')].find(v => v.textContent === '20')
@@ -144,17 +154,27 @@ const valueCenter = await evaluate(`(() => {
 })()`)
 await click(valueCenter.x, valueCenter.y)
 await sleep(250)
-results.editorOpen = await evaluate(`document.activeElement?.tagName + ':' + document.activeElement?.value`)
+results.editorOpen = await evaluate(
+  `document.activeElement?.tagName + ':' + document.activeElement?.value`,
+)
 await key('ArrowLeft')
 await key('Home')
-results.valueAfterArrowsInEditor = await evaluate(`document.querySelector('[role="slider"][aria-valuemax="48"]')?.getAttribute('aria-valuenow')`)
+results.valueAfterArrowsInEditor = await evaluate(
+  `document.querySelector('[role="slider"][aria-valuemax="48"]')?.getAttribute('aria-valuenow')`,
+)
 await evaluate(`document.activeElement.select()`)
 await typeText('33')
 await key('Enter', 'Enter', '\r')
 await sleep(300)
-results.radiusAfterEnter = await evaluate(`document.querySelector('[role="slider"][aria-valuemax="48"]')?.getAttribute('aria-valuenow')`)
-results.editorClosedAfterEnter = await evaluate(`document.querySelector('.dialkit-slider-input') === null`)
-results.focusAfterEnter = await evaluate(`document.activeElement?.getAttribute('role')`)
+results.radiusAfterEnter = await evaluate(
+  `document.querySelector('[role="slider"][aria-valuemax="48"]')?.getAttribute('aria-valuenow')`,
+)
+results.editorClosedAfterEnter = await evaluate(
+  `document.querySelector('.dialkit-slider-input') === null`,
+)
+results.focusAfterEnter = await evaluate(
+  `document.activeElement?.getAttribute('role')`,
+)
 
 // 3. A drag writes storage once, after the drag settles.
 await sleep(800)
@@ -173,7 +193,9 @@ await mouse('mouseReleased', lift.left + 190, lift.y, 0)
 results.writesDuringDrag = await evaluate(`window.__writes.length`)
 await sleep(900)
 results.writesAfterSettle = await evaluate(`window.__writes.length`)
-results.liftAfterDrag = await evaluate(`document.querySelector('[role="slider"][aria-valuemax="60"]')?.getAttribute('aria-valuenow')`)
+results.liftAfterDrag = await evaluate(
+  `document.querySelector('[role="slider"][aria-valuemax="60"]')?.getAttribute('aria-valuenow')`,
+)
 await shot('cdp-after')
 
 console.log(JSON.stringify(results, null, 2))

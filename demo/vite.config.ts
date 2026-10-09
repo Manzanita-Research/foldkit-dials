@@ -1,9 +1,12 @@
 import { resolve } from 'node:path'
-
-import { foldkit } from '@foldkit/vite-plugin'
 import { type Plugin, defineConfig } from 'vite'
 
-const packageSource = resolve(import.meta.dirname, '../packages/foldkit-dials/src')
+import { foldkit } from '@foldkit/vite-plugin'
+
+const packageSource = resolve(
+  import.meta.dirname,
+  '../packages/foldkit-dials/src',
+)
 
 // NOTE: @foldkit/vite-plugin 0.26.1 pre-bundles `foldkit/devtools-host` while
 // it serves `foldkit` from source, so the DevTools overlay registers on a
@@ -23,10 +26,21 @@ export default defineConfig({
   root: import.meta.dirname,
   plugins: [foldkit(), serveDevToolsHostFromSource()],
   resolve: {
-    conditions: ['@pleat/source', 'module', 'browser', 'development|production'],
+    conditions: [
+      '@pleat/source',
+      'module',
+      'browser',
+      'development|production',
+    ],
     alias: [
-      { find: /^foldkit-dials\/styles\.css$/, replacement: resolve(packageSource, 'styles/dials.css') },
-      { find: /^foldkit-dials$/, replacement: resolve(packageSource, 'index.ts') },
+      {
+        find: /^foldkit-dials\/styles\.css$/,
+        replacement: resolve(packageSource, 'styles/dials.css'),
+      },
+      {
+        find: /^foldkit-dials$/,
+        replacement: resolve(packageSource, 'index.ts'),
+      },
     ],
   },
   server: {

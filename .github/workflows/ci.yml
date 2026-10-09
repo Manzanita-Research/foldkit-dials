@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   check:
-    name: Typecheck, lint, test, build
+    name: Repository check
     # Fork PRs run on GitHub's free runner, so a stranger's PR never spends
     # Blacksmith minutes. Same-repo PRs and main run on Blacksmith.
     runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
@@ -30,11 +30,4 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm lint
-      - run: pnpm test
-      - run: pnpm build:demo
-      # The npm package: build it, and list the files `npm publish` would ship.
-      - run: pnpm build && pnpm pack --dry-run
-        working-directory: packages/foldkit-dials
-      - run: node tooling/check-panel-types.mjs
+      - run: pnpm check

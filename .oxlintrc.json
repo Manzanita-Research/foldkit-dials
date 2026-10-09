@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-assertions": [
+      "error",
+      { "assertionStyle": "never" }
+    ],
+    "sort-imports": [
+      "error",
+      { "ignoreDeclarationSort": true, "ignoreCase": false }
+    ]
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/repos/**",
+    "**/generated/**",
+    "**/*.generated.*",
+    "**/.alchemy/**",
+    "tooling/scratch/**",
+    "**/*.tsbuildinfo"
+  ]
+}

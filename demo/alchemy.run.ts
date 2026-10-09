@@ -1,11 +1,10 @@
-import { resolve } from 'node:path'
-
 import * as Alchemy from 'alchemy'
 import * as Cloudflare from 'alchemy/Cloudflare'
 import * as GitHub from 'alchemy/GitHub'
 import * as Output from 'alchemy/Output'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
+import { resolve } from 'node:path'
 
 // Production is one Worker, served on its custom domain.
 const productionWorker = 'foldkit-dials'
@@ -29,7 +28,10 @@ export default Alchemy.Stack(
       // NOTE: a version upload needs an entry module, so the Worker has a
       // `main` even though the demo is static.
       main: resolve(import.meta.dirname, 'worker.ts'),
-      assets: { directory: resolve(import.meta.dirname, 'dist'), notFoundHandling: 'single-page-application' },
+      assets: {
+        directory: resolve(import.meta.dirname, 'dist'),
+        notFoundHandling: 'single-page-application',
+      },
       ...(stage === 'prod'
         ? { name: productionWorker, domain: productionDomain }
         : stage.startsWith('pr-')

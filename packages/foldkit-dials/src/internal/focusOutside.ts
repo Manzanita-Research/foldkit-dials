@@ -1,4 +1,5 @@
-import { Array, Effect, Stream } from 'effect'
+import { Array, Effect, Option, Stream } from 'effect'
+import * as Subscription from 'foldkit/subscription'
 
 import { attributeSelector } from './selectors.js'
 
@@ -26,10 +27,17 @@ export const focusLeavingMarked = <Message>(
 ): Stream.Stream<Message> => {
   const selector = attributeSelector(`data-${config.attribute}`, config.id)
   return Stream.when(
-    Stream.fromEventListener<FocusEvent>(document, 'focusin').pipe(
-      Stream.filter(event => !isInsideMarked(event, selector)),
-      Stream.map(() => config.message),
-    ),
+    Subscription.fromEventFilterMap({
+      target: () => document,
+      type: 'focusin',
+      // NOTE: browsers clear composedPath after dispatch, before an async
+      // Stream consumer can inspect it. Filter inside the native listener.
+      filterMapEvent: event =>
+        Option.liftPredicate(
+          config.message,
+          () => !isInsideMarked(event, selector),
+        ),
+    }),
     Effect.sync(() => config.isOpen),
   )
 }

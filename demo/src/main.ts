@@ -10,6 +10,7 @@ import { Var } from '@pleat/core'
 import { css } from '@pleat/foldkit'
 
 import { INTRO_DURATION_SECONDS, IntroDock } from './intro'
+import { controlsRoute } from './route'
 import { SpringState, isAtRest, restingAt, step } from './spring'
 import * as Styles from './styles'
 import { CardDials, CardTuning } from './tuning'
@@ -134,10 +135,17 @@ export const update = (model: Model, message: Message) =>
         spring: spring => step(spring, springOf(model.tuning), deltaMs),
       }),
     }),
-    UpdatedReducedMotion: ({ isReducedMotion }) =>
-      isReducedMotion
-        ? reduceMotion(model)
-        : { model: modifyFields(model, { isReducedMotion: () => false }) },
+    UpdatedReducedMotion: ({ isReducedMotion }) => {
+      // NOTE: routing resubscribes to media queries. An unchanged preference
+      // must not seek over the user's retained timeline position on return.
+      if (isReducedMotion === model.isReducedMotion) {
+        return { model }
+      } else if (isReducedMotion) {
+        return reduceMotion(model)
+      } else {
+        return { model: modifyFields(model, { isReducedMotion: () => false }) }
+      }
+    },
     GotIntroMessage: ({ message: introMessage }) =>
       foldIntro(model, introMessage),
     GotIntroFrameMessage: ({ message: introMessage }) =>
@@ -328,6 +336,11 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
                     ...css(Styles.pleatLink),
                   ],
                   ['Docs & source'],
+                ),
+                ' · ',
+                h.a(
+                  [h.Href(controlsRoute()), ...css(Styles.pleatLink)],
+                  ['Control gallery'],
                 ),
                 ' · ',
                 h.a(

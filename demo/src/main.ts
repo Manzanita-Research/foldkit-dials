@@ -184,11 +184,11 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const progress = model.spring.position
   const fade = `${Transition.cssDurationOf(tuning.fade)}s ${Transition.toCssTimingFunction(tuning.fade)}`
   return {
-    title: 'foldkit-dials demo',
+    title: 'Foldkit Dials — Live tuning for Foldkit',
     body: h.main(
       [...css(Styles.demo)],
       [
-        h.h1([...css(Styles.demoTitle)], ['foldkit-dials demo']),
+        h.h1([...css(Styles.demoTitle)], ['Foldkit Dials']),
         h.p(
           [...css(Styles.pleatNote)],
           [
@@ -238,7 +238,7 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
                         ),
                       ),
                     ],
-                    ['New'],
+                    ['Live controls'],
                   ),
                   h.div(
                     [
@@ -284,7 +284,15 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
                       h.span([...css(Styles.title)], [tuning.title]),
                       h.span(
                         [...css(Styles.subtitle)],
-                        [model.isLifted ? 'Lifted. Click to drop.' : 'Click to lift.'],
+                        ['Live tuning for Foldkit apps.'],
+                      ),
+                      h.span(
+                        [...css(Styles.description)],
+                        ['Dial in colors, spacing, and motion. Every edit is a Message, ready for DevTools and time travel.'],
+                      ),
+                      h.span(
+                        [...css(Styles.hint)],
+                        [model.isLifted ? 'Click to drop. Try the dials →' : 'Click to lift. Try the dials →'],
                       ),
                     ],
                   ),
@@ -292,6 +300,23 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
               ),
           },
           h,
+        ),
+        h.div(
+          [...css(Styles.links)],
+          [
+            h.code([], ['npm install foldkit-dials']),
+            h.p(
+              [...css(Styles.linkRow)],
+              [
+                h.a(
+                  [h.Href('https://github.com/Manzanita-Research/foldkit-dials/tree/main/packages/foldkit-dials#readme'), ...css(Styles.pleatLink)],
+                  ['Docs & source'],
+                ),
+                ' · ',
+                h.a([h.Href('https://foldkit.dev'), ...css(Styles.pleatLink)], ['Built for Foldkit']),
+              ],
+            ),
+          ],
         ),
         h.submodel({
           slotId: 'intro-dock',

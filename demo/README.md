@@ -12,6 +12,36 @@ Vite keeps the Foldkit HMR plugin and DevTools configuration in
 [`vite.config.ts`](vite.config.ts). A standalone build is `pnpm build:demo`.
 The demo uses the local library source without a separate library build.
 
+## Control gallery
+
+Open **Control gallery** below the card demo, or visit `/gallery` directly.
+The gallery has three ordinary Foldkit routes:
+
+| Route               | Live examples                                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/gallery`          | ScrubSlider, DialPad, BezierEditor, ColorField, ColorPicker, ImagePicker, TransitionEditor and Curve                               |
+| `/gallery/panels`   | Dial text, slider, toggle, select, color, pad, image, transition, action and folder controls; Inline, Floating and Section layouts |
+| `/gallery/timeline` | DialTimeline playback, keyboard seeking, bar editing and live `Timeline.toTimelineSource` output                                   |
+
+Use Tab to reach controls. Each example lists its keyboard gestures; pointer
+drags also support Escape cancellation. Values belong to the gallery's parent
+Model, and child OutMessages update those values. Subscriptions have distinct
+keys and run only on their visible page. Gallery tuning is temporary and stays
+separate from the card's persisted tuning. Back/forward navigation retains both
+pages' values during the session.
+
+Usage snippets are extracted from [`src/gallery/examples.ts`](src/gallery/examples.ts),
+the actual checked TypeScript that runs the examples. The parent fold,
+subscription, Model and Message examples are under **Wire a headless control**.
+Panel and timeline pages show their factory definitions and view wiring. The
+exported timeline source reflects edits and does not change the dock's existing
+**Copy parameters** clipboard format. Runtime boot remains in `src/entry.ts`;
+`src/app.ts` composes the existing card demo with gallery routing.
+
+`pnpm check` typechecks these examples, runs the gallery Story/Scene tests and
+executes the Chromium gallery checks alongside the original browser flows and
+packed consumer checks. No gallery assets make external network requests.
+
 ## Deploy by hand
 
 Connect the default Alchemy profile once on each machine:

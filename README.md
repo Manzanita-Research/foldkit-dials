@@ -60,14 +60,16 @@ pnpm test:smoke
 
 `pnpm test:smoke` builds the library and demo, checks the existing DialPanel
 fixture against source and the actual tarball, then asserts public JS and
-CSS exports and runs five real-browser tests. The tarball consumer uses
+CSS exports and runs the original demo and gallery browser checks. The tarball consumer uses
 NodeNext resolution with no source aliases or source conditions. Its JS
 check uses the existing Happy DOM tool to supply browser globals; it does
 not boot a Runtime. The browser tests use Playwright **1.64.0**'s pinned
 Chromium headless shell, serve the built demo, and assert header/dock
 accessibility, floating header cancellation/click suppression, editor
 keyboard/focus, slider drag cancellation, and exactly one
-storage write after a burst of drag events settles. Playwright's clock
+storage write after a burst of drag events settles. Gallery checks cover
+route/history isolation, headless keyboard and pointer gestures, picker focus,
+panel layouts and timeline editing. Playwright's clock
 controls the 400 ms persistence boundary without sleeps.
 
 `pnpm check` and `pnpm test:smoke` serialize heavy work using Python
@@ -149,3 +151,10 @@ before Alchemy and serializes deployment and cleanup across stages.
 ## Licence
 
 MIT. See [LICENSE](LICENSE). DialKit's stylesheet and design are used under its MIT licence, and Foldkit under its own. See [NOTICE](packages/foldkit-dials/NOTICE).
+
+### Control gallery
+
+The private demo includes a [control gallery](demo/README.md#control-gallery).
+Run `pnpm dev`, follow **Control gallery** from the card demo, or open `/gallery`.
+Explore headless controls, panel layouts and a separate editable timeline, with
+usage snippets taken from the typechecked live examples.

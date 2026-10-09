@@ -1,3 +1,4 @@
+import { DialTimeline } from 'foldkit-dials'
 import * as Story from 'foldkit/story'
 import { describe, expect, it } from 'vitest'
 
@@ -38,6 +39,25 @@ describe('demo', () => {
       Story.message(Message.RequestedReplay()),
       Story.model(model => {
         expect(model.spring).toEqual(restingAt(1))
+      }),
+    )
+  })
+
+  it('retains timeline seeking when a route resubscribes to an unchanged motion preference', () => {
+    Story.story(
+      update,
+      Story.given(start),
+      Story.message(Message.UpdatedReducedMotion({ isReducedMotion: true })),
+      Story.message(
+        Message.GotIntroMessage({
+          message: DialTimeline.Message.RequestedSeek({ time: 1.2 }),
+        }),
+      ),
+      Story.message(Message.UpdatedReducedMotion({ isReducedMotion: true })),
+      Story.model(model => {
+        expect(model.intro.time).toBe(1.2)
+        expect(model.intro.isPlaying).toBe(false)
+        expect(model.isReducedMotion).toBe(true)
       }),
     )
   })

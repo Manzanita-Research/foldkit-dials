@@ -284,6 +284,12 @@ importers:
         specifier: 'catalog:'
         version: 4.0.0
 
+  tooling/browser:
+    devDependencies:
+      '@playwright/test':
+        specifier: 1.64.0
+        version: 1.64.0
+
 packages:
 
   '@alchemy.run/cloudflare-runtime@2.0.0-beta.80':
@@ -1289,6 +1295,11 @@ packages:
     resolution: {integrity: sha512-OtSZ6NxNkS7bkVy7zk9zGnajz2hVIu0uRPP/dJvJesGRaXtimpA4lpxap7FaIJndG2UIoKhnBU4DxyDQIWv6yg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
+  '@playwright/test@1.64.0':
+    resolution: {integrity: sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   '@pleat/core@https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/core':
     resolution: {gitHosted: true, integrity: sha512-kRBDtT+n/Sv4kCql2KYd4+SiR81Ybrc7+mYAbfelqYnyX79NsLaQCuxPVnEeqwhugJug6Q4nmJQOXmAjC2aabw==, path: /packages/core, tarball: https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033}
     version: 0.1.0
@@ -2231,6 +2242,16 @@ packages:
   pkce-challenge@5.0.1:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
     engines: {node: '>=16.20.0'}
+
+  playwright-core@1.64.0:
+    resolution: {integrity: sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.64.0:
+    resolution: {integrity: sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   postcss@8.5.28:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
@@ -3350,6 +3371,10 @@ snapshots:
 
   '@oxlint/plugins@1.87.0': {}
 
+  '@playwright/test@1.64.0':
+    dependencies:
+      playwright: 1.64.0
+
   '@pleat/core@https://codeload.github.com/Manzanita-Research/pleat/tar.gz/1e24c0933de70edac72ae4669d7376a6e14d7033#path:/packages/core(effect@4.0.0)':
     dependencies:
       csstype: 3.2.3
@@ -4152,6 +4177,12 @@ snapshots:
   picomatch@4.0.7: {}
 
   pkce-challenge@5.0.1: {}
+
+  playwright-core@1.64.0: {}
+
+  playwright@1.64.0:
+    dependencies:
+      playwright-core: 1.64.0
 
   postcss@8.5.28:
     dependencies:

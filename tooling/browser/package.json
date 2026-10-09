@@ -1,0 +1,14 @@
+{
+  "name": "@foldkit-dials/browser-tests",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "check": "python3 ../with-heavy-lock.py node run.mjs",
+    "test": "python3 ../with-heavy-lock.py node run-tests.mjs",
+    "install:browser": "python3 ../with-heavy-lock.py env PLAYWRIGHT_SKIP_BROWSER_GC=1 playwright install chromium --only-shell"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0"
+  }
+}

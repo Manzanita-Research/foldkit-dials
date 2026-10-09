@@ -22,6 +22,7 @@ export {
   marker,
   group,
   make,
+  toTimelineSource,
   valuesAt,
   durationOfTimeline,
   formatClock,

@@ -10,7 +10,8 @@ import {
   getAtPath,
 } from '../dial/index.js'
 import { formatStepValue } from '../internal/range.js'
-import { Transition, isTransition } from '../transition/index.js'
+import { createTransitionSource } from '../internal/transitionSource.js'
+import { type Transition, isTransition } from '../transition/index.js'
 
 const INDENT = '  '
 const MAX_FRACTION_DIGITS = 4
@@ -71,17 +72,14 @@ const formatImageDefault = (value: unknown): string =>
     ? `'' /* uploaded image omitted */`
     : formatStringValue(value)
 
-const formatTransition = (value: unknown, fallback: Transition): string => {
-  const transition = isTransition(value) ? value : fallback
-  return Transition.match<string>(transition, {
-    TimeSpring: ({ visualDuration, bounce }) =>
-      `Dial.spring({ visualDuration: ${formatNumber(visualDuration)}, bounce: ${formatNumber(bounce)} })`,
-    PhysicsSpring: ({ stiffness, damping, mass }) =>
-      `Dial.spring({ stiffness: ${formatNumber(stiffness)}, damping: ${formatNumber(damping)}, mass: ${formatNumber(mass)} })`,
-    Easing: ({ duration, ease }) =>
-      `Dial.easing({ duration: ${formatNumber(duration)}, ease: [${Array.join(Array.map(ease, formatNumber), ', ')}] })`,
-  })
-}
+const transitionSource = createTransitionSource(formatNumber, {
+  TimeSpring: 'Dial.spring',
+  PhysicsSpring: 'Dial.spring',
+  Easing: 'Dial.easing',
+})
+
+const formatTransition = (value: unknown, fallback: Transition): string =>
+  transitionSource(isTransition(value) ? value : fallback)
 
 const numberOr = (value: unknown, fallback: number): number =>
   Predicate.isNumber(value) ? value : fallback

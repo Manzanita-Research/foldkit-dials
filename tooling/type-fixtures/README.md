@@ -20,6 +20,20 @@ The same fixture compiles against the workspace source and against an actual npm
 
 `pnpm test:smoke` builds both artifacts, runs these consumer checks and the focused Playwright suite in `tooling/browser`. `pnpm check` runs the same command in CI. See the root README for browser setup, the shared heavy-job lock, failure artifacts and supported peer versions.
 
+## Timeline source exports
+
+`timeline.mjs` generates TypeScript with `Timeline.toTimelineSource` from the
+packed public package. The harness typechecks and emits that source using
+NodeNext with no source aliases, then reconstructs it against the same packed
+JavaScript. Four fixtures compare exact parsed configurations and 4,052 full
+sampled-value records, covering every clip and transition family, groups,
+repeat flags, partial/disjoint sequence updates, delayed property sequences,
+minimum versus content duration, numeric precision, non-finite animated values,
+control characters, Unicode, quotes/backslashes, and computed `__proto__` keys.
+Positive and negative inference checks cover grouped clips, sequence properties,
+string/numeric tracks, missing properties and markers. This runs inside the
+existing packed-consumer check and therefore in `pnpm check` and Repository CI.
+
 ## Declaration measurement
 
 Run these from the repository root with the pinned TypeScript 5.9.3 dependencies installed:

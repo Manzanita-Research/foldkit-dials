@@ -129,6 +129,32 @@ try {
       stdio: 'inherit',
     },
   )
+  cpSync(
+    resolve('tooling/type-fixtures/timeline.mjs'),
+    join(consumer, 'timeline.mjs'),
+  )
+  const runTimeline = args =>
+    execFileSync(
+      process.execPath,
+      [
+        '--import',
+        resolve('tooling/type-fixtures/browser-globals.mjs'),
+        'timeline.mjs',
+        ...args,
+      ],
+      { cwd: consumer, stdio: 'inherit' },
+    )
+  runTimeline(['--generate'])
+  const timelineFixture = join(consumer, 'timeline.generated.ts')
+  check([timelineFixture], packedOptions)
+  if (!process.exitCode) {
+    const program = ts.createProgram([timelineFixture], {
+      ...packedOptions,
+      noEmit: false,
+    })
+    assert.equal(program.emit().emitSkipped, false)
+    runTimeline([])
+  }
   if (!process.exitCode) {
     console.log(
       `DialPanel fixtures pass against source and packed package (NodeNext, no source aliases). Verified peers: ${JSON.stringify(dependencies)}`,

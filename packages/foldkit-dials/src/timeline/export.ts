@@ -1,11 +1,13 @@
-import { Array, Number, Predicate, Record } from 'effect'
+import { Array, Number, Option, Predicate, Record } from 'effect'
 
+import { createTransitionSource } from '../internal/transitionSource.js'
 import { Transition } from '../transition/index.js'
 import { nestByGroup } from './grouping.js'
 import {
   Clip,
   type ClipLoop,
   type Timeline,
+  type TimelineClip,
   Track,
   type Value,
   type Values,
@@ -154,3 +156,221 @@ Add this comment immediately above the Timeline.make call as a production handof
 // timings and transitions, then remove Timeline.make and the DialTimeline dock.
 \`\`\``
 }
+
+// TYPESCRIPT SOURCE
+
+const SOURCE_INDENT = '  '
+
+const sourceNumber = (value: number): string =>
+  Object.is(value, -0) ? '-0' : value.toString()
+
+const sourceString = (value: string): string =>
+  JSON.stringify(value)
+    .replaceAll('\u2028', '\\u2028')
+    .replaceAll('\u2029', '\\u2029')
+
+const sourceTransition = createTransitionSource(sourceNumber, {
+  TimeSpring: 'Transition.Transition.TimeSpring',
+  PhysicsSpring: 'Transition.Transition.PhysicsSpring',
+  Easing: 'Transition.Transition.Easing',
+})
+
+type SourceField = readonly [key: string, expression: string]
+
+const sourceObject = (
+  fields: ReadonlyArray<SourceField>,
+  depth: number,
+): string =>
+  Array.isReadonlyArrayEmpty(fields)
+    ? '{}'
+    : `{\n${Array.join(
+        Array.map(
+          fields,
+          ([key, expression]) =>
+            `${SOURCE_INDENT.repeat(depth + 1)}${key}: ${expression},`,
+        ),
+        '\n',
+      )}\n${SOURCE_INDENT.repeat(depth)}}`
+
+const sourceArray = (items: ReadonlyArray<string>, depth: number): string =>
+  `[\n${Array.join(
+    Array.map(items, item => `${SOURCE_INDENT.repeat(depth + 1)}${item},`),
+    '\n',
+  )}\n${SOURCE_INDENT.repeat(depth)}]`
+
+const sourceKey = (key: string): string => `[${sourceString(key)}]`
+
+const sourceValue = (value: Value): string =>
+  Predicate.isNumber(value) ? sourceNumber(value) : sourceString(value)
+
+const sourceValues = (values: Values, depth: number): string =>
+  sourceObject(
+    Array.map(Record.toEntries(values), ([key, value]) => [
+      sourceKey(key),
+      sourceValue(value),
+    ]),
+    depth,
+  )
+
+const sourceTiming = (
+  duration: number,
+  transition: Transition,
+): ReadonlyArray<SourceField> => [
+  ['duration', sourceNumber(duration)],
+  ['transition', sourceTransition(transition)],
+]
+
+const sourceLoop = (loop: ClipLoop): ReadonlyArray<SourceField> =>
+  loop === 'Repeat' ? [['loop', 'true']] : []
+
+const sourceTrack = (track: Track, depth: number): string =>
+  Track.match<string>(track, {
+    Tween: ({ delay, from, to, duration, transition }) =>
+      sourceObject(
+        [
+          ['delay', sourceNumber(delay)],
+          ['from', sourceValue(from)],
+          ['to', sourceValue(to)],
+          ...sourceTiming(duration, transition),
+        ],
+        depth,
+      ),
+    Sequence: ({ delay, from, steps }) =>
+      sourceObject(
+        [
+          ['delay', sourceNumber(delay)],
+          ['from', sourceValue(from)],
+          [
+            'steps',
+            sourceArray(
+              Array.map(steps, step =>
+                sourceObject(
+                  [
+                    ['to', sourceValue(step.to)],
+                    ...sourceTiming(step.duration, step.transition),
+                  ],
+                  depth + 2,
+                ),
+              ),
+              depth + 1,
+            ),
+          ],
+        ],
+        depth,
+      ),
+  })
+
+const sourceClip = (clip: Clip, depth: number): string =>
+  Clip.match<string>(clip, {
+    Marker: ({ at, duration }) =>
+      `Timeline.marker(${sourceObject(
+        [
+          ['at', sourceNumber(at)],
+          ['duration', sourceNumber(duration)],
+        ],
+        depth,
+      )})`,
+    Tween: ({ at, from, to, duration, transition, loop }) =>
+      `Timeline.clip(${sourceObject(
+        [
+          ['at', sourceNumber(at)],
+          ['from', sourceValues(from, depth + 1)],
+          ['to', sourceValues(to, depth + 1)],
+          ...sourceTiming(duration, transition),
+          ...sourceLoop(loop),
+        ],
+        depth,
+      )})`,
+    Sequence: ({ at, from, steps, loop }) =>
+      `Timeline.sequence(${sourceObject(
+        [
+          ['at', sourceNumber(at)],
+          ['from', sourceValues(from, depth + 1)],
+          [
+            'steps',
+            sourceArray(
+              Array.map(steps, step =>
+                sourceObject(
+                  [
+                    ['to', sourceValues(step.to, depth + 3)],
+                    ...sourceTiming(step.duration, step.transition),
+                  ],
+                  depth + 2,
+                ),
+              ),
+              depth + 1,
+            ),
+          ],
+          ...sourceLoop(loop),
+        ],
+        depth,
+      )})`,
+    Tracks: ({ at, tracks: clipTracks, loop }) =>
+      `Timeline.tracks(${sourceObject(
+        [
+          ['at', sourceNumber(at)],
+          [
+            'props',
+            sourceObject(
+              Array.map(clipTracks, track => [
+                sourceKey(track.prop),
+                sourceTrack(track, depth + 2),
+              ]),
+              depth + 1,
+            ),
+          ],
+          ...sourceLoop(loop),
+        ],
+        depth,
+      )})`,
+  })
+
+const sourceEntries = (
+  clips: ReadonlyArray<TimelineClip>,
+): ReadonlyArray<SourceField> =>
+  Array.flatMap(clips, ({ name, maybeGroup, clip }, index) =>
+    Option.match(maybeGroup, {
+      onNone: (): ReadonlyArray<SourceField> => [
+        [sourceKey(name), sourceClip(clip, 2)],
+      ],
+      onSome: groupName => {
+        const isInGroup = (entry: TimelineClip): boolean =>
+          Option.contains(entry.maybeGroup, groupName)
+        return Option.contains(Array.findFirstIndex(clips, isInGroup), index)
+          ? [
+              [
+                sourceKey(groupName),
+                `Timeline.group(${sourceObject(
+                  Array.map(Array.filter(clips, isInGroup), entry => [
+                    sourceKey(entry.name),
+                    sourceClip(entry.clip, 3),
+                  ]),
+                  2,
+                )})`,
+              ],
+            ]
+          : []
+      },
+    }),
+  )
+
+/** A paste-ready `Timeline.make(...)` TypeScript expression. Import
+ *  `{ Timeline, Transition }` from `foldkit-dials` where it is pasted.
+ *  Constructors retain inferred clip/property types, full numeric precision,
+ *  stored transitions, bar durations, partial updates, clip loops, group and
+ *  clip order, and the authored minimum editing window.
+ *
+ *  Input must be a timeline produced by `make` and the dock's edits: names
+ *  must be representable by unique record keys, grouped clips contiguous,
+ *  and timing values normalized by the constructors. Empty groups have no
+ *  representation in the parsed model. Dock playback loop state lives
+ *  outside the timeline and is not exported. This pure helper does not change
+ *  `exportConfig`, `copyInstruction`, or the dock's clipboard behavior. */
+export const toTimelineSource = (timeline: Timeline): string =>
+  `Timeline.make(${sourceObject(
+    [
+      ['duration', sourceNumber(timeline.minimumDuration)],
+      ['clips', sourceObject(sourceEntries(timeline.clips), 1)],
+    ],
+    0,
+  )})`

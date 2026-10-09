@@ -35,12 +35,7 @@ export default Alchemy.Stack(
           : {}),
       // PR previews are served from the production Worker's workers.dev
       // preview URLs, so keep its workers.dev subdomain (the default) on.
-    }).pipe(
-      // `foldkit-dials` already existed before this stack managed it, without
-      // Alchemy's ownership tags, so production takes it over rather than
-      // failing with OwnedBySomeoneElse.
-      Alchemy.AdoptPolicy.adopt(stage === 'prod'),
-    )
+    })
     const github = yield* GitHub.GitHubEnv
 
     // A pull request's `pr-<n>` stage gets a comment with its preview URL,

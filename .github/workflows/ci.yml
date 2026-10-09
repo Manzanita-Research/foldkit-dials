@@ -15,9 +15,8 @@ concurrency:
 jobs:
   check:
     name: Repository check
-    # Fork PRs run on GitHub's free runner, so a stranger's PR never spends
-    # Blacksmith minutes. Same-repo PRs and main run on Blacksmith.
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    # All PR checks, including forks, and main run on Blacksmith.
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0

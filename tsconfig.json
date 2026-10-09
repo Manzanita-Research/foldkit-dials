@@ -15,11 +15,11 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vite/client"],
+    "types": ["node"],
     "paths": {
       "foldkit-dials": ["./packages/foldkit-dials/src/index.ts"],
       "foldkit-dials/*": ["./packages/foldkit-dials/src/*"]
     }
   },
-  "include": ["packages/foldkit-dials/src", "demo/src", "vite.config.ts", "vitest.config.ts", "alchemy.run.ts", "stacks", "worker.ts"]
+  "include": ["packages/foldkit-dials/src", "demo/src", "demo/vite.config.ts", "vitest.config.ts", "demo/alchemy.run.ts", "stacks", "demo/worker.ts"]
 }

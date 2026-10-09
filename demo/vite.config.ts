@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { foldkit } from '@foldkit/vite-plugin'
 import { type Plugin, defineConfig } from 'vite'
 
-const packageSource = resolve(import.meta.dirname, 'packages/foldkit-dials/src')
+const packageSource = resolve(import.meta.dirname, '../packages/foldkit-dials/src')
 
 // NOTE: @foldkit/vite-plugin 0.26.1 pre-bundles `foldkit/devtools-host` while
 // it serves `foldkit` from source, so the DevTools overlay registers on a
@@ -20,7 +20,7 @@ const serveDevToolsHostFromSource = (): Plugin => ({
 })
 
 export default defineConfig({
-  root: resolve(import.meta.dirname, 'demo'),
+  root: import.meta.dirname,
   plugins: [foldkit(), serveDevToolsHostFromSource()],
   resolve: {
     conditions: ['@pleat/source', 'module', 'browser', 'development|production'],
@@ -37,5 +37,5 @@ export default defineConfig({
     // NOTE: native file events do not reach Vite inside the agent sandbox.
     watch: { usePolling: true, interval: 300 },
   },
-  build: { outDir: resolve(import.meta.dirname, 'dist/demo'), emptyOutDir: true },
+  build: { outDir: resolve(import.meta.dirname, 'dist'), emptyOutDir: true },
 })

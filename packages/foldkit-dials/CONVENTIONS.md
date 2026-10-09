@@ -48,13 +48,13 @@ This package follows `@foldkit/ui`'s conventions exactly, and Foldkit's `AGENTS.
 - Commands, from the repo root:
   - Typecheck: `node_modules/.bin/tsc --noEmit -p tsconfig.json`.
   - Test: `node_modules/.bin/vitest run packages/foldkit-dials/src/<name>`.
-  - Lint: `tooling/lint/node_modules/.bin/oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src/<name>`. This runs Foldkit's own lint plugin (`all.json`).
+  - Lint: `node_modules/.bin/oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src/<name>`. This runs Foldkit's own lint plugin (`all.json`) from the root installation.
   - Format: `tooling/format.sh <files>`.
 - A type assertion that cannot be avoided takes `/* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */` plus a `// NOTE:` saying why, as in `@foldkit/ui`.
 
 ## Don't
 
-- Don't install packages, and never run `pnpm`, `npm`, or `npx`. Everything needed is in `node_modules`. `pnpm exec` triggers an unscreened install in this repo.
+- Don't install packages during a scoped component edit. Workspace maintenance assignments may explicitly authorize a root install. Root `pnpm run`/`pnpm exec` reject a stale installation instead of installing implicitly.
 - Don't start a dev server.
 - Don't edit files outside your assigned folders. If you need a shared helper changed, say so in your report.
 - Don't commit. The lead integrates and commits.

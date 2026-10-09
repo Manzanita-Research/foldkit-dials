@@ -1,0 +1,28 @@
+{
+  "name": "@foldkit-dials/demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy"
+  },
+  "dependencies": {
+    "@effect/platform-browser": "catalog:",
+    "@foldkit/devtools": "0.166.0",
+    "@foldkit/ui": "catalog:",
+    "@pleat/core": "github:Manzanita-Research/pleat#1e24c0933de70edac72ae4669d7376a6e14d7033&path:/packages/core",
+    "@pleat/foldkit": "github:Manzanita-Research/pleat#1e24c0933de70edac72ae4669d7376a6e14d7033&path:/packages/foldkit",
+    "effect": "catalog:",
+    "foldkit": "catalog:",
+    "foldkit-dials": "workspace:*"
+  },
+  "devDependencies": {
+    "@effect/platform-node": "4.0.0",
+    "@foldkit/vite-plugin": "0.26.1",
+    "alchemy": "2.0.0-beta.80",
+    "vite": "catalog:"
+  }
+}

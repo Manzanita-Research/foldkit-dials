@@ -1,9 +1,0 @@
-{
-  "name": "foldkit-dials-lint",
-  "private": true,
-  "type": "module",
-  "devDependencies": {
-    "@foldkit/oxlint-plugin": "0.15.2",
-    "oxlint": "1.77.0"
-  }
-}

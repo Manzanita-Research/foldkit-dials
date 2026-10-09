@@ -73,7 +73,7 @@ jobs:
         run: pnpm build:demo
       - if: steps.credentials.outputs.ready == 'true'
         name: Deploy with Alchemy
-        run: pnpm exec alchemy deploy --stage "$STAGE" --yes
+        run: pnpm run deploy --stage "$STAGE" --yes
 
   cleanup:
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
@@ -118,4 +118,4 @@ jobs:
         run: pnpm install --frozen-lockfile
       - if: steps.credentials.outputs.ready == 'true'
         name: Destroy the preview with Alchemy
-        run: pnpm exec alchemy destroy --stage "$STAGE" --yes
+        run: pnpm run destroy --stage "$STAGE" --yes

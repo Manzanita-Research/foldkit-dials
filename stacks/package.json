@@ -1,0 +1,11 @@
+{
+  "name": "@foldkit-dials/ci-bootstrap",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@effect/platform-node": "4.0.0",
+    "alchemy": "2.0.0-beta.80",
+    "effect": "catalog:"
+  }
+}

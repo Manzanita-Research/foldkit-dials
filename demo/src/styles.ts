@@ -27,9 +27,11 @@ export const live = {
 export const demo = Style.make({
   minHeight: '100vh',
   display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '40px 340px 40px 40px',
+  padding: '24px 340px 240px 40px',
 })
 
 export const card = Recipe.make({
@@ -82,7 +84,7 @@ export const art = Recipe.make({
   ),
   variants: {
     layout: {
-      Stack: { width: '100%', aspectRatio: '16 / 10' },
+      Stack: { width: '100%', aspectRatio: '16 / 8' },
       Row: { width: 120, flexShrink: 0, aspectRatio: '1' },
     },
   },
@@ -96,6 +98,10 @@ export const text = Style.make({
 })
 export const title = Style.make({ fontSize: 18, fontWeight: 700 })
 export const subtitle = Style.make({ fontSize: 14, color: '#64748b' })
+export const description = Style.make({ marginTop: 6, fontSize: 14, lineHeight: 1.5, color: '#475569' })
+export const hint = Style.make({ marginTop: 8, fontSize: 12, lineHeight: 1.5, color: '#64748b' })
+export const links = Style.make({ textAlign: 'center', fontSize: 12, color: '#475569' })
+export const linkRow = Style.make({ margin: '10px 0 0' })
 export const badge = Style.make({
   position: 'absolute',
   top: 6,

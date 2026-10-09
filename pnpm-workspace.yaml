@@ -1,3 +1,10 @@
+# Install scripts stay off. esbuild's binary arrives as an optional
+# dependency, and workerd's download is only needed by `alchemy dev`'s local
+# runtime, not to deploy.
+allowBuilds:
+  esbuild: false
+  workerd: false
+
 # pnpm 11 refuses packages published less than a day ago. These exact pins were
 # that new when the lockfile was made; the exclusion is safe to drop once they
 # are older than a day.

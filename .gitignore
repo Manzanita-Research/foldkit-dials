@@ -3,3 +3,4 @@ dist
 *.log
 tooling/scratch
 tooling/lint/node_modules
+.alchemy

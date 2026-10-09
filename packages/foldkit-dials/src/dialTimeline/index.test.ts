@@ -1,5 +1,6 @@
-import { Array, Effect, Fiber, Option, Record, Stream } from 'effect'
+import { Array, Effect, Fiber, Option, Record, Stream, pipe } from 'effect'
 import * as Story from 'foldkit/story'
+import { modifyFields } from 'foldkit/struct'
 import * as Subscription from 'foldkit/subscription'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -22,6 +23,7 @@ import {
   isContinuousMessage,
   make,
   update,
+  valuesOf,
 } from './index.js'
 import type { Model } from './index.js'
 
@@ -1202,6 +1204,169 @@ describe('DialTimeline', () => {
   })
 
   describe('valuesOf', () => {
+    const repeatingTimeline = Timeline.make({
+      duration: 2,
+      clips: {
+        intro: Timeline.clip({
+          at: 0,
+          duration: 0.5,
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+          transition: easing,
+        }),
+        layer: Timeline.group({
+          path: Timeline.sequence({
+            at: 0.1,
+            loop: true,
+            from: { x: 0, color: '#000000', label: 'start' },
+            transition: easing,
+            steps: [
+              { duration: 0.4, to: { x: 10, color: '#ffffff', label: 'end' } },
+              { duration: 0.6, to: { x: 0 } },
+            ],
+          }),
+          float: Timeline.tracks({
+            at: 0.2,
+            loop: true,
+            props: {
+              y: {
+                from: -9,
+                delay: 0.1,
+                transition: easing,
+                steps: [
+                  { duration: 0.3, to: 9 },
+                  { duration: 0.7, to: -9 },
+                ],
+              },
+              scale: {
+                from: 0,
+                to: 1,
+                delay: 0.3,
+                transition: Transition.PhysicsSpring({
+                  stiffness: 200,
+                  damping: 25,
+                  mass: 1,
+                }),
+              },
+            },
+          }),
+        }),
+        bounce: Timeline.clip({
+          at: 1,
+          loop: true,
+          from: { scale: 0 },
+          to: { scale: 1 },
+          transition: Transition.PhysicsSpring({
+            stiffness: 200,
+            damping: 25,
+            mass: 1,
+          }),
+        }),
+        cue: Timeline.marker({ at: 1.5, duration: 0.2 }),
+      },
+    })
+
+    const expectSampledValues = (model: Model) => {
+      const duration = Timeline.durationOfTimeline(model.timeline)
+      const cycleTime = Timeline.cycleTimeOf(
+        model.time,
+        model.wraps,
+        duration,
+        model.loop,
+      )
+      const expected = Timeline.valuesAt(model.timeline, model.time, cycleTime)
+      expect(valuesOf(model)).toEqual(expected)
+      return expected
+    }
+
+    it('samples grouped sequences and delayed physics tracks across whole and region wraps', () => {
+      Array.forEach([false, true, { from: 1 }, { from: 20 }], loop => {
+        const dock = make({
+          name: 'Repeating',
+          timeline: repeatingTimeline,
+          loop,
+        })
+        const beforeWrap = modifyFields(dock.init(), {
+          time: () => 1.95,
+          wraps: () => 2,
+        })
+        const wrapped = update(
+          beforeWrap,
+          Message.TickedFrame({ deltaTime: 100 }),
+        ).model
+        expect(dock.valuesOf(wrapped)).toEqual(expectSampledValues(wrapped))
+        if (wrapped.time >= 0.5) {
+          expect(dock.valuesOf(wrapped).intro.current.opacity).toBe(1)
+        } else {
+          expect(dock.valuesOf(wrapped).intro.current.opacity).toBeLessThan(1)
+        }
+        expect(Object.keys(dock.valuesOf(wrapped))).toEqual([
+          'intro',
+          'bounce',
+          'cue',
+          'layer',
+        ])
+        expect(Object.keys(dock.valuesOf(wrapped).layer)).toEqual([
+          'path',
+          'float',
+        ])
+      })
+    })
+
+    it('uses an edited physics duration for cycle time and restores old snapshots between instances', () => {
+      const dock = make({
+        name: 'Repeating',
+        timeline: repeatingTimeline,
+        loop: { from: 0.5 },
+      })
+      const original = modifyFields(dock.init(), {
+        time: () => 1.4,
+        wraps: () => 3,
+      })
+      const originalValues = dock.valuesOf(original)
+      const nextTimeline = pipe(
+        repeatingTimeline,
+        Timeline.modifyClip('bounce', clip =>
+          Timeline.setSpanTransition(
+            clip,
+            Timeline.Span.Whole(),
+            Transition.PhysicsSpring({ stiffness: 100, damping: 2, mass: 1 }),
+          ),
+        ),
+        Timeline.modifyClip('layer.path', clip =>
+          Timeline.setSpanDuration(clip, Timeline.Span.Step({ index: 0 }), 0.8),
+        ),
+        Timeline.modifyClip('layer.float', clip =>
+          Timeline.setTrackDelay(clip, 'scale', 0.8),
+        ),
+      )
+      const edited = modifyFields(original, { timeline: () => nextTimeline })
+      const otherDock = make({
+        name: 'Other',
+        timeline: repeatingTimeline,
+        loop: true,
+      })
+      const other = modifyFields(otherDock.init(), { time: () => 0.4 })
+      const otherValues = otherDock.valuesOf(other)
+
+      expect(Timeline.durationOfTimeline(nextTimeline)).toBeGreaterThan(
+        repeatingTimeline.minimumDuration,
+      )
+      expect(dock.valuesOf(edited)).toEqual(expectSampledValues(edited))
+      expect(dock.valuesOf(edited)).not.toEqual(originalValues)
+      const duration = Timeline.durationOfTimeline(nextTimeline)
+      const nearEnd = modifyFields(edited, { time: () => duration - 0.05 })
+      const wrapped = update(
+        nearEnd,
+        Message.TickedFrame({ deltaTime: 100 }),
+      ).model
+      expect(wrapped.wraps).toBe(4)
+      expect(dock.valuesOf(wrapped)).toEqual(expectSampledValues(wrapped))
+      expect(otherDock.valuesOf(other)).toEqual(otherValues)
+      expect(dock.valuesOf(original)).toEqual(originalValues)
+      expect(dock.valuesOf(edited)).toEqual(expectSampledValues(edited))
+    })
+
     it('samples every clip at the playhead, typed by the config', () => {
       const values = Dock.valuesOf(
         after(paused(), Message.RequestedSeek({ time: 0.7 })),

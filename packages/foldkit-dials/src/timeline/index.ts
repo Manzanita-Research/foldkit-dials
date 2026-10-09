@@ -1210,11 +1210,10 @@ const nestByGroup = <Item extends NamedClip>(
   return Record.fromEntries([...ungrouped, ...grouped])
 }
 
-/** Samples a timeline at `time` and returns each clip's values under its
- *  config name, with grouped clips nested under their group. `cycleTime`
- *  defaults to `time`, the first-pass state. */
-export const valuesAt = <Entries>(
-  timeline: TimelineOf<Entries>,
+/** Samples resolved clips under their config names, nesting grouped clips
+ *  under their group. `cycleTime` defaults to the first-pass state. */
+export const valuesAtResolved = <Entries>(
+  timelineStatic: TimelineStatic,
   time: number,
   cycleTime: number = time,
 ): ValuesOf<Entries> =>
@@ -1223,10 +1222,20 @@ export const valuesAt = <Entries>(
   // describes, so the keys and variants match by construction.
   /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
   nestByGroup(
-    sampleTimeline(resolve(timeline), time, cycleTime),
+    sampleTimeline(timelineStatic, time, cycleTime),
     ({ values }) => values,
     Function.identity,
   ) as ValuesOf<Entries>
+
+/** Samples a timeline at `time` and returns each clip's values under its
+ *  config name, with grouped clips nested under their group. `cycleTime`
+ *  defaults to `time`, the first-pass state. */
+export const valuesAt = <Entries>(
+  timeline: TimelineOf<Entries>,
+  time: number,
+  cycleTime: number = time,
+): ValuesOf<Entries> =>
+  valuesAtResolved<Entries>(resolve(timeline), time, cycleTime)
 
 // LOOPING
 

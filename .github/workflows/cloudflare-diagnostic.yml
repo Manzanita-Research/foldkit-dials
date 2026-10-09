@@ -1,0 +1,28 @@
+name: Cloudflare diagnostic
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-diagnostic
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'jem/fkd-4-retry-native-foldkit-deployment-and-simpli-thr_uc6usfi28n' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Bounded read-only Cloudflare probes
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: timeout --signal=TERM --kill-after=5s 110s python3 -I -B tooling/cloudflare_probe.py

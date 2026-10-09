@@ -13,12 +13,12 @@ Install with `npm install foldkit-dials`. Status: early (0.1.0). Built on `foldk
 Use pnpm **12.10.1**, pinned in the root `packageManager`. One root
 `pnpm install --frozen-lockfile` installs the entire workspace:
 
-| Package | Owns |
-| --- | --- |
-| Root | TypeScript, Vitest, Happy DOM, Oxlint/Foldkit lint plugin, Oxfmt |
+| Package                  | Owns                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| Root                     | TypeScript, Vitest, Happy DOM, Oxlint/Foldkit lint plugin, Oxfmt                |
 | `packages/foldkit-dials` | Published library and explicit runtime peers; catalog-pinned development copies |
-| `demo` (private) | App runtime, Pleat, Vite/Foldkit integration, Alchemy stack and Worker entry |
-| `stacks` (private) | Privileged CI credential bootstrap dependencies, with no default deploy script |
+| `demo` (private)         | App runtime, Pleat, Vite/Foldkit integration, Alchemy stack and Worker entry    |
+| `stacks` (private)       | Privileged CI credential bootstrap dependencies, with no default deploy script  |
 
 The demo declares `foldkit-dials: workspace:*`, so pnpm links the local
 library and never substitutes a registry release. TypeScript, Vitest and
@@ -41,13 +41,29 @@ SQL adapters are held at 4.0.0 to satisfy the same Effect peer. The unused
 Alchemy frontend-frameworks package is omitted: this stack uses a Worker
 with static assets, without a frontend-framework resource.
 
-Root commands remain `pnpm typecheck`, `pnpm test`, `pnpm lint`,
-`pnpm build:demo` and `pnpm dev`. Format selected files with
-`pnpm format <files...>` or `tooling/format.sh <files...>`, using the existing
-format configuration. Lint has no separate installation. Install policy
-keeps the one-day release delay and denies dependency install scripts;
-the reasons and Pleat Git exception are in `pnpm-workspace.yaml`.
-Run/exec fail on a stale installation instead of silently installing.
+Run `pnpm check` for the same repository check CI runs: formatting, lint,
+types, tests, both builds, package contents and DialPanel consumer types.
+Use `pnpm format` to format the repository, `pnpm format <files...>` (or
+`tooling/format.sh <files...>`) for selected files, and `pnpm format:check`
+to check without writing. Oxfmt **0.72.0** and Oxlint **1.77.0** are pinned
+root tools available after the frozen install.
+
+`pnpm lint` checks all owned JavaScript and TypeScript, including config,
+deployment stacks and browser tooling, with general correctness rules.
+It then applies Foldkit's `all.json` preset to library and demo source,
+including the preset's test and entry-point exceptions. Both passes use
+explicit configs with nested discovery disabled. Formatting also uses
+an explicit root config and preserves embedded code and documented snippet
+layout. Dependency trees, build output, generated files, Alchemy state,
+scratch files and `repos/` reference trees are excluded from both tools;
+the generated lockfile is excluded from formatting.
+
+Individual commands include `pnpm typecheck`, `pnpm test`,
+`pnpm build:library`, `pnpm build:demo`, `pnpm typecheck:panel-consumer`
+and `pnpm dev`. Lint has no separate installation. Install policy keeps
+the one-day release delay and denies dependency install scripts; the
+reasons and Pleat Git exception are in `pnpm-workspace.yaml`. Run/exec
+fail on a stale installation instead of silently installing.
 
 ## Styling with Pleat (optional)
 

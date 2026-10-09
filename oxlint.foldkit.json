@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": [
+    "./.oxlintrc.json",
+    "./node_modules/@foldkit/oxlint-plugin/all.json"
+  ],
+  "rules": {
+    "foldkit/no-nonportable-server-globals": "off"
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/repos/**",
+    "**/generated/**",
+    "**/*.generated.*",
+    "**/.alchemy/**",
+    "tooling/scratch/**",
+    "**/*.tsbuildinfo"
+  ]
+}

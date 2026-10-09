@@ -98,9 +98,23 @@ export const text = Style.make({
 })
 export const title = Style.make({ fontSize: 18, fontWeight: 700 })
 export const subtitle = Style.make({ fontSize: 14, color: '#64748b' })
-export const description = Style.make({ marginTop: 6, fontSize: 14, lineHeight: 1.5, color: '#475569' })
-export const hint = Style.make({ marginTop: 8, fontSize: 12, lineHeight: 1.5, color: '#64748b' })
-export const links = Style.make({ textAlign: 'center', fontSize: 12, color: '#475569' })
+export const description = Style.make({
+  marginTop: 6,
+  fontSize: 14,
+  lineHeight: 1.5,
+  color: '#475569',
+})
+export const hint = Style.make({
+  marginTop: 8,
+  fontSize: 12,
+  lineHeight: 1.5,
+  color: '#64748b',
+})
+export const links = Style.make({
+  textAlign: 'center',
+  fontSize: 12,
+  color: '#475569',
+})
 export const linkRow = Style.make({ margin: '10px 0 0' })
 export const badge = Style.make({
   position: 'absolute',
@@ -142,4 +156,7 @@ export const pleatNote = Style.make({
   lineHeight: 1.6,
   color: '#64748b',
 })
-export const pleatLink = Style.make({ color: '#6d5efc', textUnderlineOffset: 3 })
+export const pleatLink = Style.make({
+  color: '#6d5efc',
+  textUnderlineOffset: 3,
+})

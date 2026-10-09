@@ -48,8 +48,9 @@ This package follows `@foldkit/ui`'s conventions exactly, and Foldkit's `AGENTS.
 - Commands, from the repo root:
   - Typecheck: `node_modules/.bin/tsc --noEmit -p tsconfig.json`.
   - Test: `node_modules/.bin/vitest run packages/foldkit-dials/src/<name>`.
-  - Lint: `node_modules/.bin/oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src/<name>`. This runs Foldkit's own lint plugin (`all.json`) from the root installation.
+  - Lint: `node_modules/.bin/oxlint --disable-nested-config -c oxlint.foldkit.json packages/foldkit-dials/src/<name>`. This runs general correctness and Foldkit's lint plugin (`all.json`) from the root installation. `pnpm lint` also checks repository config, stacks and tooling with the general preset.
   - Format: `tooling/format.sh <files>`.
+  - Repository check: `pnpm check`. CI runs this command after one frozen root install; it includes formatting, lint, types, tests, both builds, package contents and the source/packed consumer fixture.
 - A type assertion that cannot be avoided takes `/* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */` plus a `// NOTE:` saying why, as in `@foldkit/ui`.
 
 ## Don't

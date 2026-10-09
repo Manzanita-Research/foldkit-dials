@@ -97,15 +97,15 @@ Runtime.run(
 )
 ```
 
-| Option | Purpose |
-| --- | --- |
-| `panel` | The panel from `DialPanel.make` |
-| `read`, `write` | Where the values live in your Model |
-| `onAction` | Turns an action dial's path into one of your Messages |
-| `show` | `'Development'` (default: only when `import.meta.hot` is set, as under Vite's dev server and vitest), `'Always'`, or `'Never'` |
-| `theme` | `'System'`, `'Light'`, or `'Dark'` |
-| `position` | `'TopRight'` (default), `'TopLeft'`, `'BottomRight'`, or `'BottomLeft'` |
-| `layout` | `'Floating'` (draggable, collapses to an icon) or `'Inline'` |
+| Option          | Purpose                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `panel`         | The panel from `DialPanel.make`                                                                                                |
+| `read`, `write` | Where the values live in your Model                                                                                            |
+| `onAction`      | Turns an action dial's path into one of your Messages                                                                          |
+| `show`          | `'Development'` (default: only when `import.meta.hot` is set, as under Vite's dev server and vitest), `'Always'`, or `'Never'` |
+| `theme`         | `'System'`, `'Light'`, or `'Dark'`                                                                                             |
+| `position`      | `'TopRight'` (default), `'TopLeft'`, `'BottomRight'`, or `'BottomLeft'`                                                        |
+| `layout`        | `'Floating'` (draggable, collapses to an icon) or `'Inline'`                                                                   |
 
 `attach` routes each drag and scroll frame under `GotDialPanelDragMessage`, and
 lists it in `excludeFromHistory`, so DevTools keeps clicks and drops but skips
@@ -204,20 +204,20 @@ Each constructor returns a Schema with a `dial` annotation. A stored or
 preserved value that no longer fits the Schema decodes to the default, so a
 changed range or option list never breaks a reload.
 
-| Dial | Constructor | Value |
-| --- | --- | --- |
-| Slider | `Dial.slider({ default, min, max, step?, shortcut? })` | `number` |
-| Inferred slider | `Dial.number(1.2)` | `number` |
-| Toggle | `Dial.toggle(true, { shortcut? })` | `boolean` |
-| Text | `Dial.text('Hello', { placeholder? })` | `string` |
-| Select | `Dial.select(['stack', 'grid'], { default? })` | one of the options |
-| Color | `Dial.color('#a78bfa')` | CSS colour: hex, `rgb()`, `hsl()`, `oklch()`, `color(display-p3 …)` |
-| Image | `Dial.image({ options?, default? })` | URL or data URL; uploads up to 10 MB stay in the browser |
-| XY pad | `Dial.pad({ x?, y?, labels? })` | `{ x, y }` |
-| Spring | `Dial.spring({ visualDuration, bounce })` or `({ stiffness, damping, mass? })` | `Transition` |
-| Easing | `Dial.easing({ duration, ease? })` | `Transition` |
-| Action | `Dial.action('Replay')` | no value; reports `ClickedAction` |
-| Folder | `Dial.folder({ ... }, { isCollapsed? })` | nested values |
+| Dial            | Constructor                                                                    | Value                                                               |
+| --------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| Slider          | `Dial.slider({ default, min, max, step?, shortcut? })`                         | `number`                                                            |
+| Inferred slider | `Dial.number(1.2)`                                                             | `number`                                                            |
+| Toggle          | `Dial.toggle(true, { shortcut? })`                                             | `boolean`                                                           |
+| Text            | `Dial.text('Hello', { placeholder? })`                                         | `string`                                                            |
+| Select          | `Dial.select(['stack', 'grid'], { default? })`                                 | one of the options                                                  |
+| Color           | `Dial.color('#a78bfa')`                                                        | CSS colour: hex, `rgb()`, `hsl()`, `oklch()`, `color(display-p3 …)` |
+| Image           | `Dial.image({ options?, default? })`                                           | URL or data URL; uploads up to 10 MB stay in the browser            |
+| XY pad          | `Dial.pad({ x?, y?, labels? })`                                                | `{ x, y }`                                                          |
+| Spring          | `Dial.spring({ visualDuration, bounce })` or `({ stiffness, damping, mass? })` | `Transition`                                                        |
+| Easing          | `Dial.easing({ duration, ease? })`                                             | `Transition`                                                        |
+| Action          | `Dial.action('Replay')`                                                        | no value; reports `ClickedAction`                                   |
+| Folder          | `Dial.folder({ ... }, { isCollapsed? })`                                       | nested values                                                       |
 
 Spring and easing dials share one editor with Easing, Time, and Physics modes.
 `Transition.toMotion` turns a value into Motion options, and
@@ -321,34 +321,34 @@ frame: Frame.animationFrame<Model, Message>({
 
 ## Parity with DialKit
 
-| Area | DialKit 2.0.2 | foldkit-dials |
-| --- | --- | --- |
-| Slider, inferred slider, toggle, text, select | Yes | Yes |
-| Color (hex, RGB, HSL, OKLCH, Display P3) | Yes | Yes |
-| Image with upload | Yes | Yes |
-| XY pad | Yes | Yes |
-| Spring and easing editor (Easing, Time, Physics) | Yes | Yes |
-| Action, folder, collapsed folder | Yes | Yes |
-| Panel `id`, `persist` (key, storage, presets) | Yes | Yes |
-| `defaultCollapsed`, `onAction` | Yes | Yes: `isCollapsedByDefault`, `onAction` |
-| Shortcuts (key, modifier, interaction, mode, badges) | Panel option | Yes, declared on the dial |
-| Versions: new, select, delete, auto-save | Yes | Yes |
-| Compare two versions | No | Yes |
-| Copy | Values plus an instruction | Paste-ready dial Schema source; a refused copy shows as failed |
-| Floating (drag, collapse to icon), inline | Yes | Yes |
-| Several panels as sections of one root | Yes | Yes: `DialPanel.root`, with Subscription keys per panel |
-| Position and theme | Yes | Yes |
-| Hidden in production | Yes | Yes: `show: 'Development'` |
-| Keyboard map (panel, slider, editor, pad, select, segmented, colour, image, Bézier) | Yes | Yes |
-| Values from code (`setValue`, `setValues`) | Controller | Write your Model; the active version updates on the next panel edit |
-| `resetValues`, `setOpen`, `getOpen` from code | Controller | Not yet |
-| Timeline clips, sequences, tracks, groups, loops | Yes | Yes |
-| Timeline dock (scrub, move, resize, edit, zoom, copy) | Yes | Yes, except the native horizontal scrollbar |
-| Timeline presets and persistence | Yes | Not yet |
-| Framework adapters | React, Solid, Svelte, Vue, vanilla | Foldkit |
-| Values typed and decoded by a Schema; stale stored values fall back per field | No | Yes |
-| Edits as Messages: DevTools history and time travel, Story and Scene tests | No | Yes (drag frames kept out of history) |
-| Saves while dragging | Every change | Once, 400 ms after the last change |
+| Area                                                                                | DialKit 2.0.2                      | foldkit-dials                                                       |
+| ----------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------- |
+| Slider, inferred slider, toggle, text, select                                       | Yes                                | Yes                                                                 |
+| Color (hex, RGB, HSL, OKLCH, Display P3)                                            | Yes                                | Yes                                                                 |
+| Image with upload                                                                   | Yes                                | Yes                                                                 |
+| XY pad                                                                              | Yes                                | Yes                                                                 |
+| Spring and easing editor (Easing, Time, Physics)                                    | Yes                                | Yes                                                                 |
+| Action, folder, collapsed folder                                                    | Yes                                | Yes                                                                 |
+| Panel `id`, `persist` (key, storage, presets)                                       | Yes                                | Yes                                                                 |
+| `defaultCollapsed`, `onAction`                                                      | Yes                                | Yes: `isCollapsedByDefault`, `onAction`                             |
+| Shortcuts (key, modifier, interaction, mode, badges)                                | Panel option                       | Yes, declared on the dial                                           |
+| Versions: new, select, delete, auto-save                                            | Yes                                | Yes                                                                 |
+| Compare two versions                                                                | No                                 | Yes                                                                 |
+| Copy                                                                                | Values plus an instruction         | Paste-ready dial Schema source; a refused copy shows as failed      |
+| Floating (drag, collapse to icon), inline                                           | Yes                                | Yes                                                                 |
+| Several panels as sections of one root                                              | Yes                                | Yes: `DialPanel.root`, with Subscription keys per panel             |
+| Position and theme                                                                  | Yes                                | Yes                                                                 |
+| Hidden in production                                                                | Yes                                | Yes: `show: 'Development'`                                          |
+| Keyboard map (panel, slider, editor, pad, select, segmented, colour, image, Bézier) | Yes                                | Yes                                                                 |
+| Values from code (`setValue`, `setValues`)                                          | Controller                         | Write your Model; the active version updates on the next panel edit |
+| `resetValues`, `setOpen`, `getOpen` from code                                       | Controller                         | Not yet                                                             |
+| Timeline clips, sequences, tracks, groups, loops                                    | Yes                                | Yes                                                                 |
+| Timeline dock (scrub, move, resize, edit, zoom, copy)                               | Yes                                | Yes, except the native horizontal scrollbar                         |
+| Timeline presets and persistence                                                    | Yes                                | Not yet                                                             |
+| Framework adapters                                                                  | React, Solid, Svelte, Vue, vanilla | Foldkit                                                             |
+| Values typed and decoded by a Schema; stale stored values fall back per field       | No                                 | Yes                                                                 |
+| Edits as Messages: DevTools history and time travel, Story and Scene tests          | No                                 | Yes (drag frames kept out of history)                               |
+| Saves while dragging                                                                | Every change                       | Once, 400 ms after the last change                                  |
 
 ## Licence
 

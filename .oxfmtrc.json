@@ -1,5 +1,5 @@
 {
-  
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "semi": false,
   "singleQuote": true,
   "arrowParens": "avoid",
@@ -18,11 +18,16 @@
     ]
   },
   "sortPackageJson": false,
+  "embeddedLanguageFormatting": "off",
   "ignorePatterns": [
-    "node_modules",
-    "dist",
-    "repos",
-    "*.tsbuildinfo",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/repos/**",
+    "**/generated/**",
+    "**/*.generated.*",
+    "**/.alchemy/**",
+    "tooling/scratch/**",
+    "**/*.tsbuildinfo",
     "pnpm-lock.yaml"
   ]
 }

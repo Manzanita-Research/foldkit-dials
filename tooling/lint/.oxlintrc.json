@@ -1,6 +1,6 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "extends": ["./node_modules/@foldkit/oxlint-plugin/all.json"],
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../node_modules/@foldkit/oxlint-plugin/all.json"],
   "plugins": ["typescript"],
   "categories": { "correctness": "off" },
   "rules": {

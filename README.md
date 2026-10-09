@@ -8,6 +8,47 @@ Live tuning controls for [Foldkit](https://foldkit.dev) apps, after Josh Puckett
 
 Install with `npm install foldkit-dials`. Status: early (0.1.0). Built on `foldkit` 0.166 and `effect` 4.0.
 
+## Workspace development
+
+Use pnpm **12.10.1**, pinned in the root `packageManager`. One root
+`pnpm install --frozen-lockfile` installs the entire workspace:
+
+| Package | Owns |
+| --- | --- |
+| Root | TypeScript, Vitest, Happy DOM, Oxlint/Foldkit lint plugin, Oxfmt |
+| `packages/foldkit-dials` | Published library and explicit runtime peers; catalog-pinned development copies |
+| `demo` (private) | App runtime, Pleat, Vite/Foldkit integration, Alchemy stack and Worker entry |
+| `stacks` (private) | Privileged CI credential bootstrap dependencies, with no default deploy script |
+
+The demo declares `foldkit-dials: workspace:*`, so pnpm links the local
+library and never substitutes a registry release. TypeScript, Vitest and
+demo Vite resolve the library's source through explicit aliases. Tests and
+`pnpm dev` therefore work immediately after install, without building the
+library. Published exports still resolve `dist` JavaScript, declarations
+and CSS; `pnpm build:library` builds those files, and
+`pnpm --filter foldkit-dials pack` produces the release tarball.
+
+The catalog keeps library development and demo runtime on the same Foldkit,
+Effect and browser-platform versions. Foldkit 0.166.0 and its DevTools/Vite
+peers require exact Effect 4.0.0. The library directly uses the browser
+platform, so consumers must supply that peer too. Pleat's existing
+`@pleat/source` condition stays confined to source development; Pleat is
+still absent from the library's dependencies and peers.
+
+Vite is also a library development dependency for the existing
+`import.meta.hot` types; it is not a published runtime dependency. Alchemy's
+SQL adapters are held at 4.0.0 to satisfy the same Effect peer. The unused
+Alchemy frontend-frameworks package is omitted: this stack uses a Worker
+with static assets, without a frontend-framework resource.
+
+Root commands remain `pnpm typecheck`, `pnpm test`, `pnpm lint`,
+`pnpm build:demo` and `pnpm dev`. Format selected files with
+`pnpm format <files...>` or `tooling/format.sh <files...>`, using the existing
+format configuration. Lint has no separate installation. Install policy
+keeps the one-day release delay and denies dependency install scripts;
+the reasons and Pleat Git exception are in `pnpm-workspace.yaml`.
+Run/exec fail on a stale installation instead of silently installing.
+
 ## Styling with Pleat (optional)
 
 [Pleat](https://github.com/Manzanita-Research/pleat) is optional, but encouraged
@@ -29,7 +70,7 @@ CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cl
 - **`prod`** on every push to `main`: the `foldkit-dials` Worker, at https://foldkit-dials.manzanita.dev.
 - **A `pr-<n>` preview** for each pull request from this repository, at `https://pr-<n>-foldkit-dials.manzanita.workers.dev`. It is a version of the production Worker that takes no traffic, as with Cloudflare's Git integration. Its URL is commented on the PR, and each push re-points it. Cloudflare can't delete versions, so after the PR closes the URL keeps serving its last version.
 
-`alchemy.run.ts` declares the demo as one `Cloudflare.Worker` that serves the output of `pnpm build:demo` as static assets. `.github/workflows/deploy.yml` builds the demo, then runs `alchemy deploy`.
+`demo/alchemy.run.ts` declares the demo as one `Cloudflare.Worker` that serves `demo/dist`, the output of `pnpm build:demo`, as static assets. Its entry and asset paths resolve from the stack file. `.github/workflows/deploy.yml` builds the demo, then runs the root deploy script, which forwards to the demo package.
 
 ### CI's credentials
 
@@ -38,13 +79,20 @@ The deploy reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from this re
 Deploy that stack once from your laptop, with an `admin` Alchemy profile that can create API tokens:
 
 ```sh
-pnpm alchemy profile create admin
-pnpm alchemy profile edit --profile admin --add Cloudflare   # Global API Key + email, or a token with API Tokens Write
-pnpm alchemy profile edit --profile admin --add GitHub       # gh-cli
-pnpm alchemy deploy --config stacks/github.ts --profile admin
+pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy profile create admin
+pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy profile edit --profile admin --add Cloudflare   # Global API Key + email, or a token with API Tokens Write
+pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy profile edit --profile admin --add GitHub       # gh-cli
+pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy deploy --config github.ts --profile admin
 ```
 
 Deploy it again only to rotate the token or change its permissions. Treat the `admin` profile like root and use it only for this stack.
+
+Credential provisioning stays in the separate `stacks` workspace package.
+Its `github.ts` declaration is unchanged by the workspace migration. The
+demo stack consumes existing credentials; it does not provision or rotate
+them. Routine root demo deploy and cleanup never select the bootstrap
+package. The bootstrap has no default deploy script and requires the
+explicit command and admin profile above.
 
 ### Deploy by hand
 

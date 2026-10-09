@@ -1,3 +1,24 @@
+packages:
+  - packages/*
+  - demo
+  - stacks
+
+# Foldkit 0.166.0 and its Vite/DevTools peers require exactly Effect 4.0.0
+# and browser platform 4.0.0. Library development and the demo share them.
+catalog:
+  '@effect/platform-browser': 4.0.0
+  '@foldkit/ui': 0.166.0
+  effect: 4.0.0
+  foldkit: 0.166.0
+  vite: 8.3.1
+
+# Keep a one-day delay for registry releases. The old Foldkit and lint
+# exceptions were published on 2026-10-05 and have aged out.
+minimumReleaseAge: 1440
+
+# An explicit install owns dependency changes; run/exec must not install.
+verifyDepsBeforeRun: error
+
 # Install scripts stay off. esbuild's binary arrives as an optional
 # dependency, and workerd's download is only needed by `alchemy dev`'s local
 # runtime, not to deploy.
@@ -5,18 +26,13 @@ allowBuilds:
   esbuild: false
   workerd: false
 
-# pnpm 11 refuses packages published less than a day ago. These exact pins were
-# that new when the lockfile was made; the exclusion is safe to drop once they
-# are older than a day.
-minimumReleaseAgeExclude:
-  - '@foldkit/devtools@0.166.0'
-  - '@foldkit/ui@0.166.0'
-  - '@foldkit/vite-plugin@0.26.1'
-  - foldkit@0.166.0
-
 # Pleat is not on npm yet. Its adapter's workspace dependency resolves to the
 # same pinned source as the demo's direct dependency.
 overrides:
+  # Alchemy accepts 4.0.0 adapters. Their 4.0.1 releases require Effect
+  # ^4.0.1, which conflicts with Foldkit's exact 4.0.0 peer.
+  'alchemy>@effect/sql-d1': 4.0.0
+  'alchemy>@effect/sql-sqlite-do': 4.0.0
   '@pleat/foldkit>@pleat/core': 'github:Manzanita-Research/pleat#1e24c0933de70edac72ae4669d7376a6e14d7033&path:/packages/core'
 
 # Required for the adapter to use the pinned Git source above. Remove together

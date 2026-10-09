@@ -1,3 +1,5 @@
+import { resolve } from 'node:path'
+
 import * as Alchemy from 'alchemy'
 import * as Cloudflare from 'alchemy/Cloudflare'
 import * as GitHub from 'alchemy/GitHub'
@@ -18,7 +20,7 @@ export default Alchemy.Stack(
   Effect.gen(function* () {
     const stage = yield* Alchemy.Stage
     // The demo is one Worker that serves the app `pnpm build:demo` built into
-    // dist/demo. Production deploys it as `foldkit-dials` on its domain. A
+    // demo/dist. Production deploys it as `foldkit-dials` on its domain. A
     // `pr-<n>` stage uploads a version of that same Worker instead of creating
     // its own, like Cloudflare's Git integration: the version takes no traffic,
     // its preview URL is `pr-<n>-foldkit-dials.<subdomain>.workers.dev`, and
@@ -26,8 +28,8 @@ export default Alchemy.Stack(
     const demo = yield* Cloudflare.Worker('Demo', {
       // NOTE: a version upload needs an entry module, so the Worker has a
       // `main` even though the demo is static.
-      main: './worker.ts',
-      assets: { directory: './dist/demo', notFoundHandling: 'single-page-application' },
+      main: resolve(import.meta.dirname, 'worker.ts'),
+      assets: { directory: resolve(import.meta.dirname, 'dist'), notFoundHandling: 'single-page-application' },
       ...(stage === 'prod'
         ? { name: productionWorker, domain: productionDomain }
         : stage.startsWith('pr-')

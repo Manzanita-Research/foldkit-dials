@@ -1,2 +1,0 @@
-minimumReleaseAgeExclude:
-  - '@foldkit/oxlint-plugin@0.15.2'

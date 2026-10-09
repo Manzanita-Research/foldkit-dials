@@ -1,7 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc"],
-  "categories": { "correctness": "error" },
+  "categories": {
+    "correctness": "error"
+  },
   "rules": {
     "no-unused-vars": [
       "error",
@@ -16,11 +18,16 @@
     "typescript/no-explicit-any": "error",
     "typescript/consistent-type-assertions": [
       "error",
-      { "assertionStyle": "never" }
+      {
+        "assertionStyle": "never"
+      }
     ],
     "sort-imports": [
       "error",
-      { "ignoreDeclarationSort": true, "ignoreCase": false }
+      {
+        "ignoreDeclarationSort": true,
+        "ignoreCase": false
+      }
     ]
   },
   "ignorePatterns": [
@@ -31,6 +38,8 @@
     "**/*.generated.*",
     "**/.alchemy/**",
     "tooling/scratch/**",
-    "**/*.tsbuildinfo"
+    "**/*.tsbuildinfo",
+    "**/.agents/**",
+    "**/.claude/**"
   ]
 }

@@ -65,6 +65,14 @@ the one-day release delay and denies dependency install scripts; the
 reasons and Pleat Git exception are in `pnpm-workspace.yaml`. Run/exec
 fail on a stale installation instead of silently installing.
 
+## Agent guidance and release references
+
+Start with [AGENTS.md](AGENTS.md) and the release-owned
+[FOLDKIT.md](FOLDKIT.md). [Agent tooling](docs/agent-reference.md) explains
+our read-only Foldkit 0.166.0 subtree, discoverable Foldkit/Effect skills,
+reference refresh checks and pinned DevTools MCP setup. All references
+arrive with a normal clone and stay outside workspace/build/check globs.
+
 ## Styling with Pleat (optional)
 
 [Pleat](https://github.com/Manzanita-Research/pleat) is optional, but encouraged

@@ -8,7 +8,10 @@
   "sortImports": {
     "ignoreCase": false,
     "customGroups": [
-      { "groupName": "scoped", "elementNamePattern": ["@*", "@*/**"] }
+      {
+        "groupName": "scoped",
+        "elementNamePattern": ["@*", "@*/**"]
+      }
     ],
     "groups": [
       ["builtin", "external"],
@@ -28,6 +31,10 @@
     "**/.alchemy/**",
     "tooling/scratch/**",
     "**/*.tsbuildinfo",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "**/.agents/**",
+    "**/.claude/**",
+    "FOLDKIT.md",
+    "CLAUDE.md"
   ]
 }

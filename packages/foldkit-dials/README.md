@@ -298,6 +298,33 @@ playback frames out of DevTools history. Also available: `Timeline.sequence`,
 `Timeline.tracks`, `Timeline.group`, `Timeline.marker`, loops, and
 `play`, `pause`, `replay`, and `seek` helpers.
 
+Use `Timeline.toTimelineSource(tunedTimeline)` to export a tuned model as a
+typed TypeScript expression:
+
+```ts
+import { Timeline, Transition } from 'foldkit-dials'
+
+const source = Timeline.toTimelineSource(model.intro.timeline)
+// Paste the resulting Timeline.make(...) expression at module scope.
+// Its clips, groups and properties retain constructor-based type inference.
+```
+
+The expression uses `Timeline.clip`, `sequence`, `tracks`, `marker`, `group`,
+and `Transition.Transition` constructors. It preserves full numeric precision,
+stored transition parameters and edited bar durations, partial property updates,
+track delays, clip repeat flags, group/clip order, and the authored minimum
+editing window. Names and string values are escaped, including safe computed
+`__proto__` keys. The output needs the two imports shown above and does not
+start a Runtime or an animation.
+
+Pass models produced by `Timeline.make` and dock edits. Hand-built models with
+duplicate names, group/name collisions, interleaved groups, duplicate property
+tracks, or unnormalized timings cannot be faithfully represented by these
+constructors. Empty groups are absent from the parsed model. The dock's
+playback loop state is separate from the timeline; export it separately if
+needed. The dock's Copy button still writes its existing rounded JSON and
+production handoff instructions. Source export is an additional pure API.
+
 ## Components
 
 The panel is built from headless Submodels in the style of `@foldkit/ui`. Each

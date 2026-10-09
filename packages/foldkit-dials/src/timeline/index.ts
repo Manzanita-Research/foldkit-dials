@@ -98,4 +98,4 @@ export {
   formatStepLabel,
 } from './formatting.js'
 
-export { exportConfig, copyInstruction } from './export.js'
+export { exportConfig, copyInstruction, toTimelineSource } from './export.js'

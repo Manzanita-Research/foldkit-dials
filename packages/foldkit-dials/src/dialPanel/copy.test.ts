@@ -31,6 +31,39 @@ const sourceLines = (values: Source): ReadonlyArray<string> =>
   toDialSource('Card', controls, values).split('\n')
 
 describe('toDialSource', () => {
+  it('keeps constructor names, four-decimal formatting and fallback for all transition modes', () => {
+    const panel = make({
+      name: 'Transitions',
+      schema: Schema.Struct({
+        time: Dial.spring({ visualDuration: 0.312345, bounce: 0.212345 }),
+        physics: Dial.spring({
+          stiffness: 123.456789,
+          damping: 12.34567,
+          mass: 0.9876543,
+        }),
+        easing: Dial.easing({
+          duration: 0.345678,
+          ease: [0.123456, -0.456789, 0.876543, 1.234567],
+        }),
+      }),
+    })
+    const expected = Array.join(
+      [
+        '// Transitions: tuned with foldkit-dials. Paste over your dial Schema.',
+        'Schema.Struct({',
+        '  time: Dial.spring({ visualDuration: 0.3123, bounce: 0.2123 }),',
+        '  physics: Dial.spring({ stiffness: 123.4568, damping: 12.3457, mass: 0.9877 }),',
+        '  easing: Dial.easing({ duration: 0.3457, ease: [0.1235, -0.4568, 0.8765, 1.2346] }),',
+        '})',
+      ],
+      '\n',
+    )
+    expect(toDialSource('Transitions', panel.controls, panel.defaults)).toBe(
+      expected,
+    )
+    expect(toDialSource('Transitions', panel.controls, {})).toBe(expected)
+  })
+
   it('writes the dial Schema with the given values as its defaults', () => {
     expect(
       toDialSource('Card', controls, {

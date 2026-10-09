@@ -113,6 +113,8 @@ def validate_credentials(account, token):
             "account_format_valid": account_format_valid,
             "token_present": isinstance(token, str) and bool(token),
             "token_format_valid": token_format_valid,
+            "token_has_surrounding_whitespace": isinstance(token, str) and token != token.strip(),
+            "token_trimmed_format_valid": isinstance(token, str) and re.fullmatch(r"[!-~]{1,4096}", token.strip()) is not None,
         })
         emit({"error": "invalid_credentials"})
         return False

@@ -136,15 +136,16 @@ class ProbeTests(unittest.TestCase):
                 self.assertEqual(rows, [{
                     "account_present": present, "account_format_valid": False,
                     "token_present": True, "token_format_valid": True,
+                    "token_has_surrounding_whitespace": False, "token_trimmed_format_valid": True,
                 }, {"error": "invalid_credentials"}])
                 self.assertTrue(all(type(value) is bool for value in rows[0].values()))
                 self.assert_sanitized(output, stderr)
 
     def test_invalid_token_reports_only_presence_and_format_booleans(self):
-        for token, present in [(None, False), ("", False), (7, False),
-                               (TOKEN + "\n", True), (TOKEN + " ", True),
-                               (TOKEN + "\x00", True), (TOKEN + "é", True),
-                               ("x" * 4097, True)]:
+        for token, present, surrounding, trimmed in [(None, False, False, False), ("", False, False, False), (7, False, False, False),
+                               (TOKEN + "\n", True, True, True), (TOKEN + " ", True, True, True),
+                               (TOKEN + "\x00", True, False, False), (TOKEN + "é", True, False, False),
+                               ("x" * 4097, True, False, False)]:
             with self.subTest(present=present):
                 code, opener, output, stderr = run([], ACCOUNT, token)
                 self.assertEqual(code, 1)
@@ -153,11 +154,12 @@ class ProbeTests(unittest.TestCase):
                 self.assertEqual(rows, [{
                     "account_present": True, "account_format_valid": True,
                     "token_present": present, "token_format_valid": False,
+                    "token_has_surrounding_whitespace": surrounding, "token_trimmed_format_valid": trimmed,
                 }, {"error": "invalid_credentials"}])
                 self.assertTrue(all(type(value) is bool for value in rows[0].values()))
                 self.assert_sanitized(output, stderr)
 
-    def test_both_invalid_fields_report_only_four_literal_booleans(self):
+    def test_both_invalid_fields_report_only_six_literal_booleans(self):
         code, opener, output, stderr = run([], MARKER, TOKEN + "\n")
         self.assertEqual(code, 1)
         self.assertEqual(opener.requests, [])
@@ -165,9 +167,31 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(rows, [{
             "account_present": True, "account_format_valid": False,
             "token_present": True, "token_format_valid": False,
+            "token_has_surrounding_whitespace": True, "token_trimmed_format_valid": True,
         }, {"error": "invalid_credentials"}])
         self.assertTrue(all(type(value) is bool for value in rows[0].values()))
         self.assert_sanitized(output, stderr)
+
+    def test_surrounding_and_internal_whitespace_report_only_fixed_booleans(self):
+        for token, surrounding, trimmed in [
+            (" " + TOKEN + "\t\r\n", True, True),
+            ("\u2003" + TOKEN + "\u2003", True, True),
+            (TOKEN + " " + TOKEN, False, False),
+            (" " + TOKEN + " " + TOKEN + " ", True, False),
+            (" \t\n", True, False),
+            ({"value": TOKEN}, False, False),
+        ]:
+            code, opener, output, stderr = run([], ACCOUNT, token)
+            self.assertEqual(code, 1)
+            self.assertEqual(opener.requests, [])
+            rows = [json.loads(line) for line in output.splitlines()]
+            self.assertEqual(rows, [{
+                "account_present": True, "account_format_valid": True,
+                "token_present": isinstance(token, str) and bool(token), "token_format_valid": False,
+                "token_has_surrounding_whitespace": surrounding, "token_trimmed_format_valid": trimmed,
+            }, {"error": "invalid_credentials"}])
+            self.assertTrue(all(type(value) is bool for value in rows[0].values()))
+            self.assert_sanitized(output, stderr)
 
     def test_rate_limit_stops_immediately_without_reading_429_body(self):
         response = Response(None, 429, raw=TOKEN.encode())

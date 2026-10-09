@@ -1,8 +1,14 @@
 import { Option, Schema, pipe } from 'effect'
 import type { Update } from 'foldkit'
-import { defineMessageUnion } from 'foldkit/message'
+import { type MessageUnion, defineMessageUnion } from 'foldkit/message'
+import type { View } from 'foldkit/submodel'
+import type * as Subscription from 'foldkit/subscription'
 
-import { type DialFields, defaults as dialDefaults } from '../dial/index.js'
+import {
+  type Control,
+  type DialFields,
+  defaults as dialDefaults,
+} from '../dial/index.js'
 import { Message } from './message.js'
 import { Model, activeVersionName, init as initPanel } from './model.js'
 import { type MakeConfig, makeSpec } from './spec.js'
@@ -21,6 +27,43 @@ export type { MakeConfig } from './spec.js'
 export type ViewInputs<Values> = Omit<PanelViewInputs, 'values'> &
   Readonly<{ values: Values }>
 
+/** The panel's OutMessage Schema, with changed values typed by its dial Schema. */
+export type PanelOutMessage<Fields extends DialFields> = MessageUnion<{
+  readonly ChangedValues: Readonly<{ values: Schema.Struct<Fields> }>
+  readonly ClickedAction: Readonly<{ path: typeof Schema.String }>
+}>
+
+/** A panel bundle built by `make`, retaining its dial Schema and typed values. */
+export type Panel<Fields extends DialFields> = Readonly<{
+  id: string
+  name: string
+  Values: Schema.Struct<Fields>
+  defaults: Schema.Struct<Fields>['Type']
+  controls: ReadonlyArray<Control>
+  Model: typeof Model
+  Message: typeof Message
+  OutMessage: PanelOutMessage<Fields>
+  init: () => Update.Return<Model, Message>
+  update: (
+    model: Model,
+    message: Message,
+    values: Schema.Struct<Fields>['Type'],
+  ) => Update.ReturnWithOutMessage<
+    Model,
+    Message,
+    PanelOutMessage<Fields>['Type']
+  >
+  view: View<Model, Message, PanelViewInputs>
+  subscriptions: Subscription.Subscriptions<Model, Message>
+  comparison: (
+    model: Model,
+  ) => Option.Option<
+    Readonly<{ name: string; values: Schema.Struct<Fields>['Type'] }>
+  >
+  activeVersionName: typeof activeVersionName
+  isContinuousMessage: typeof isContinuousMessage
+}>
+
 /** Builds a tuning panel for a dial Schema. Returns a Submodel bundle, like
  *  `@foldkit/ui`'s `create` factories:
  *
@@ -32,7 +75,9 @@ export type ViewInputs<Values> = Omit<PanelViewInputs, 'values'> &
  *  - `subscriptions`, for `Subscription.lift`. Their keys start with the
  *    panel id, so several panels can be lifted together.
  *  - `defaults`, the values to ship without the panel. */
-export const make = <Fields extends DialFields>(config: MakeConfig<Fields>) => {
+export const make = <Fields extends DialFields>(
+  config: MakeConfig<Fields>,
+): Panel<Fields> => {
   type Values = Schema.Struct<Fields>['Type']
   const spec = makeSpec(config)
   const defaults: Values = dialDefaults(config.schema)
@@ -93,6 +138,3 @@ export const make = <Fields extends DialFields>(config: MakeConfig<Fields>) => {
     isContinuousMessage,
   }
 }
-
-/** A panel bundle built by `make`. */
-export type Panel<Fields extends DialFields> = ReturnType<typeof make<Fields>>

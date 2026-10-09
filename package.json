@@ -9,6 +9,7 @@
     "build:demo": "pnpm --filter @foldkit-dials/demo run build",
     "build:library": "pnpm --filter foldkit-dials run build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:panel-consumer": "node tooling/check-panel-types.mjs",
     "test": "vitest run",
     "lint": "oxlint -c tooling/lint/.oxlintrc.json packages/foldkit-dials/src demo/src",
     "format": "oxfmt -c .oxfmtrc.json --write",

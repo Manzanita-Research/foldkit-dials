@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 import { constants } from 'node:os'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters } from 'node:util'
 
 const root = resolve(import.meta.dirname, '../..')
 const preview = spawn(
@@ -45,6 +46,7 @@ console.log(`Owned preview PID=${preview.pid}`)
 
 try {
   await new Promise((resolve, reject) => {
+    let output = ''
     const timeout = setTimeout(
       () => reject(new Error('Preview startup timed out.')),
       20_000,
@@ -55,7 +57,8 @@ try {
     }
     preview.stdout.on('data', data => {
       process.stdout.write(data)
-      if (data.toString().includes('http://127.0.0.1:5268/')) {
+      output += data.toString()
+      if (stripVTControlCharacters(output).includes('http://127.0.0.1:5268/')) {
         finish(resolve)
       }
     })

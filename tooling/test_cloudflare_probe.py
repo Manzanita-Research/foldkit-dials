@@ -5,6 +5,7 @@ import email.message
 import importlib.util
 import io
 import json
+import os
 import pathlib
 import time
 import unittest
@@ -192,6 +193,47 @@ class ProbeTests(unittest.TestCase):
             }, {"error": "invalid_credentials"}])
             self.assertTrue(all(type(value) is bool for value in rows[0].values()))
             self.assert_sanitized(output, stderr)
+
+    def test_explicit_trimmed_mode_is_get_only_and_does_not_modify_environment(self):
+        responses = [
+            Response({"success": True}),
+            Response({"success": True, "result": {"subdomain": "fixture"}}),
+            Response({"success": True, "result": {}}),
+            Response({"success": True, "result": []}),
+            Response({"version": probe.EXPECTED_CONTRACT}),
+        ]
+        opener = Opener(responses)
+        out, err = io.StringIO(), io.StringIO()
+        raw = " \t" + TOKEN + "\r\n"
+        before = dict(os.environ)
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = probe.diagnose_trimmed_readonly(ACCOUNT, raw, opener)
+        self.assertEqual(code, 0)
+        self.assertEqual(dict(os.environ), before)
+        self.assertEqual(raw, " \t" + TOKEN + "\r\n")
+        self.assertEqual(len(opener.requests), 5)
+        self.assertTrue(all(request.get_method() == "GET" and request.data is None for request, _ in opener.requests))
+        self.assertTrue(all(request.get_header("Authorization") == "Bearer " + TOKEN for request, _ in opener.requests[:-1]))
+        self.assertIsNone(opener.requests[-1][0].get_header("Authorization"))
+        self.assertEqual(json.loads(out.getvalue().splitlines()[0]), {"read_only_trimmed_verification": True})
+        self.assert_sanitized(out.getvalue(), err.getvalue())
+        # The original mode still rejects the exact raw input without GETs.
+        code, normal, output, stderr = run([], ACCOUNT, raw)
+        self.assertEqual(code, 1)
+        self.assertEqual(normal.requests, [])
+        self.assert_sanitized(output, stderr)
+
+    def test_trimmed_mode_invalid_candidates_still_make_no_gets(self):
+        for account, token in [(ACCOUNT, None), (ACCOUNT, 7), (ACCOUNT, " "),
+                               (ACCOUNT, " " + TOKEN + " " + TOKEN + " "),
+                               (MARKER, " " + TOKEN + " ")]:
+            opener = Opener([])
+            out, err = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = probe.diagnose_trimmed_readonly(account, token, opener)
+            self.assertEqual(code, 1)
+            self.assertEqual(opener.requests, [])
+            self.assert_sanitized(out.getvalue(), err.getvalue())
 
     def test_rate_limit_stops_immediately_without_reading_429_body(self):
         response = Response(None, 429, raw=TOKEN.encode())

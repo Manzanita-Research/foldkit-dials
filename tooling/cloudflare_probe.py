@@ -143,6 +143,16 @@ def diagnose(account, token, opener):
     return 0
 
 
+def diagnose_trimmed_readonly(account, token, opener):
+    # Explicit GET-only investigation. The original environment and raw
+    # preflight path remain untouched; this local candidate is never saved.
+    if not isinstance(token, str):
+        return diagnose(account, token, opener)
+    candidate = token.strip()
+    emit({"read_only_trimmed_verification": True})
+    return diagnose(account, candidate, opener)
+
+
 def expire(signum, frame):
     raise DeadlineExpired()
 
@@ -165,4 +175,10 @@ def main(diagnoser=diagnose):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    if sys.argv[1:] == ["--verify-trimmed-readonly"]:
+        sys.exit(main(diagnose_trimmed_readonly))
+    elif sys.argv[1:]:
+        emit({"error": "invalid_mode"})
+        sys.exit(1)
+    else:
+        sys.exit(main())

@@ -19,5 +19,5 @@
       "foldkit-dials/*": ["./packages/foldkit-dials/src/*"]
     }
   },
-  "include": ["packages/foldkit-dials/src", "demo/src", "vite.config.ts", "vitest.config.ts", "alchemy.run.ts", "worker.ts"]
+  "include": ["packages/foldkit-dials/src", "demo/src", "vite.config.ts", "vitest.config.ts", "alchemy.run.ts", "stacks", "worker.ts"]
 }

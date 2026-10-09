@@ -19,7 +19,18 @@ CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cl
 
 ### CI's credentials
 
-The deploy reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the Manzanita-Research organization's Actions secrets, so this repository needs no secrets of its own. The token needs these account permissions: Workers Scripts Edit, Account Settings Edit, and Secrets Store Edit. Alchemy keeps its state in the account's Secrets Store.
+The deploy reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from this repository's Actions secrets. `stacks/github.ts` sets both. It mints a Cloudflare API token for CI with only the account permissions the deploy needs: Workers Scripts, Account Settings and Secrets Store (write), and Workers Tail (read). Alchemy keeps its state in the account's Secrets Store.
+
+Deploy that stack once from your laptop, with an `admin` Alchemy profile that can create API tokens:
+
+```sh
+pnpm alchemy profile create admin
+pnpm alchemy profile edit --profile admin --add Cloudflare   # Global API Key + email, or a token with API Tokens Write
+pnpm alchemy profile edit --profile admin --add GitHub       # gh-cli
+pnpm alchemy deploy --config stacks/github.ts --profile admin
+```
+
+Deploy it again only to rotate the token or change its permissions. Treat the `admin` profile like root and use it only for this stack.
 
 ### Deploy by hand
 

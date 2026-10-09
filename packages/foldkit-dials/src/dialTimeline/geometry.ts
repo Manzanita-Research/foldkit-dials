@@ -68,8 +68,8 @@ export const durationOf = (model: Model): number =>
   Timeline.durationOfTimeline(model.timeline)
 
 /** Continuous time across loop wraps, for sampling looping clips. */
-export const cycleTimeOf = (model: Model): number =>
-  Timeline.cycleTimeOf(model.time, model.wraps, durationOf(model), model.loop)
+export const cycleTimeOf = (model: Model, duration: number): number =>
+  Timeline.cycleTimeOf(model.time, model.wraps, duration, model.loop)
 
 /** The tallest the dock can be: the viewport less a margin, once the
  *  viewport height is known. */

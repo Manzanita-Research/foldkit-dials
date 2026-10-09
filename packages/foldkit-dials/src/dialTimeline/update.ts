@@ -706,9 +706,21 @@ export const transportOf = (model: Model): Transport => ({
   duration: durationOf(model),
 })
 
+/** Resolves the edited timeline once for cycle time and value sampling. */
+export const sampleValues = <Entries>(
+  model: Model,
+): Timeline.ValuesOf<Entries> => {
+  const timelineStatic = Timeline.resolve(model.timeline)
+  return Timeline.valuesAtResolved<Entries>(
+    timelineStatic,
+    model.time,
+    cycleTimeOf(model, timelineStatic.duration),
+  )
+}
+
 /** Samples every clip at the playhead, keyed by clip name with grouped clips
  *  nested under their group. A host binds `values.card.current` in its
  *  view. A `make` bundle's `valuesOf` returns the same values typed by the
  *  timeline config. */
 export const valuesOf = (model: Model): Readonly<Record<string, unknown>> =>
-  Timeline.valuesAt(model.timeline, model.time, cycleTimeOf(model))
+  sampleValues(model)

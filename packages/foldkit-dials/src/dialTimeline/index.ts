@@ -2,11 +2,10 @@ import * as Subscription from 'foldkit/subscription'
 
 import { slugify } from '../internal/slug.js'
 import * as Timeline from '../timeline/index.js'
-import { cycleTimeOf } from './geometry.js'
 import { Message, OutMessage } from './message.js'
 import { type MakeConfig, Model, initModel } from './model.js'
 import { isContinuousMessage, subscriptions } from './subscriptions.js'
-import { update } from './update.js'
+import { sampleValues, update } from './update.js'
 import { view } from './view/dock.js'
 
 export {
@@ -88,12 +87,7 @@ export const make = <Entries>(config: MakeConfig<Entries>): Bundle<Entries> => {
     update,
     view,
     subscriptions: subscriptions(id),
-    valuesOf: model =>
-      Timeline.valuesAt<Entries>(
-        model.timeline,
-        model.time,
-        cycleTimeOf(model),
-      ),
+    valuesOf: sampleValues<Entries>,
     isContinuousMessage,
   }
 }

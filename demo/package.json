@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "deploy": "alchemy deploy",
+    "setup": "alchemy profile edit --add Cloudflare",
+    "deploy": "node scripts/deploy.mjs",
+    "deploy:prod": "pnpm run deploy --stage prod",
+    "deploy:personal": "pnpm run deploy",
+    "destroy:personal": "alchemy destroy",
     "destroy": "alchemy destroy"
   },
   "dependencies": {

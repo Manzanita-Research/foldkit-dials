@@ -81,38 +81,21 @@ to npm, the demo pins its two packages to a GitHub commit and resolves their
 
 ## Deploy the demo
 
-CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cloudflare/frontend/foldkit/):
-
-- **`prod`** on every push to `main`: the `foldkit-dials` Worker, at https://foldkit-dials.manzanita.dev.
-- **A `pr-<n>` preview** for each pull request from this repository, at `https://pr-<n>-foldkit-dials.manzanita.workers.dev`. It is a version of the production Worker that takes no traffic, as with Cloudflare's Git integration. Its URL is commented on the PR, and each push re-points it. Cloudflare can't delete versions, so after the PR closes the URL keeps serving its last version.
-
-`demo/alchemy.run.ts` declares the demo as one `Cloudflare.Worker` that serves `demo/dist`, the output of `pnpm build:demo`, as static assets. Its entry and asset paths resolve from the stack file. `.github/workflows/deploy.yml` builds the demo, then runs the root deploy script, which forwards to the demo package.
-
-### CI's credentials
-
-The deploy reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from this repository's Actions secrets. `stacks/github.ts` sets both. It mints a Cloudflare API token for CI with only the account permissions the deploy needs: Workers Scripts, Account Settings and Secrets Store (write), and Workers Tail (read). Alchemy keeps its state in the account's Secrets Store.
-
-Deploy that stack once from your laptop, with an `admin` Alchemy profile that can create API tokens:
+The demo owns its stack, Vite build and deployment. See
+[`demo/README.md`](demo/README.md) for fresh setup, explicit production and
+personal commands, CI credentials and preview cleanup behavior.
 
 ```sh
-pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy profile create admin
-pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy profile edit --profile admin --add Cloudflare   # Global API Key + email, or a token with API Tokens Write
-pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy profile edit --profile admin --add GitHub       # gh-cli
-pnpm --filter @foldkit-dials/ci-bootstrap exec alchemy deploy --config github.ts --profile admin
+pnpm run setup:demo
+pnpm run deploy:personal
+pnpm run deploy:prod
 ```
 
-Deploy it again only to rotate the token or change its permissions. Treat the `admin` profile like root and use it only for this stack.
-
-Credential provisioning stays in the separate `stacks` workspace package.
-Its `github.ts` declaration is unchanged by the workspace migration. The
-demo stack consumes existing credentials; it does not provision or rotate
-them. Routine root demo deploy and cleanup never select the bootstrap
-package. The bootstrap has no default deploy script and requires the
-explicit command and admin profile above.
-
-### Deploy by hand
-
-`pnpm run deploy` deploys your own `live_<user>` stage, and `pnpm run destroy` removes it. Use `pnpm run`, because `pnpm deploy` is a different, built-in pnpm command.
+Every deploy builds fresh assets first. Production preserves
+<https://foldkit-dials.manzanita.dev>; PR previews retain the existing version
+URLs and comments. Closing a PR removes its Alchemy stage, while the uploaded
+version URL can remain available. CI checks existing state-store availability
+before Alchemy and serializes deployment and cleanup across stages.
 
 ## Licence
 

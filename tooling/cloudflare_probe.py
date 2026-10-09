@@ -36,7 +36,11 @@ def emit(summary):
 
 
 def query(opener, operation, url, token=None):
-    headers = {} if token is None else {"Authorization": "Bearer " + token}
+    # Match the normal Node client. Python-urllib's default User-Agent can
+    # receive an edge 403 from an otherwise healthy workers.dev endpoint.
+    headers = {"User-Agent": "node"}
+    if token is not None:
+        headers["Authorization"] = "Bearer " + token
     request = urllib.request.Request(url, headers=headers, method="GET")
     try:
         try:
@@ -97,10 +101,10 @@ def query(opener, operation, url, token=None):
     emit(summary)
     if limited:
         raise RateLimited()
-    return body if success or operation == "stateStore.version" else {}
+    return body if success or (operation == "stateStore.version" and status == 200) else {}
 
 
-def diagnose(account, token, opener):
+def validate_credentials(account, token):
     account_format_valid = isinstance(account, str) and re.fullmatch(r"[0-9a-fA-F]{32}", account) is not None
     token_format_valid = isinstance(token, str) and re.fullmatch(r"[!-~]{1,4096}", token) is not None
     if not account_format_valid or not token_format_valid:
@@ -111,6 +115,12 @@ def diagnose(account, token, opener):
             "token_format_valid": token_format_valid,
         })
         emit({"error": "invalid_credentials"})
+        return False
+    return True
+
+
+def diagnose(account, token, opener):
+    if not validate_credentials(account, token):
         return 1
     try:
         verified = query(opener, "account.token.verify", f"{API_BASE}/accounts/{account}/tokens/verify", token)
@@ -135,12 +145,12 @@ def expire(signum, frame):
     raise DeadlineExpired()
 
 
-def main():
+def main(diagnoser=diagnose):
     previous_handler = signal.signal(signal.SIGALRM, expire)
     signal.alarm(TOTAL_TIMEOUT_SECONDS)
     try:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
-        return diagnose(os.environ.get("CLOUDFLARE_ACCOUNT_ID"), os.environ.get("CLOUDFLARE_API_TOKEN"), opener)
+        return diagnoser(os.environ.get("CLOUDFLARE_ACCOUNT_ID"), os.environ.get("CLOUDFLARE_API_TOKEN"), opener)
     except DeadlineExpired:
         emit({"error": "deadline"})
         return 3

@@ -4,7 +4,7 @@ name: Deploy
 # preview version of the production Worker for each pull request from this
 # repository (with its URL commented on the PR), and destroys the preview's
 # stage when the PR closes. The Cloudflare
-# credentials are repository secrets that stacks/github.ts sets; see the README.
+# credentials come from Actions secrets; see demo/README.md.
 
 on:
   push:
@@ -15,10 +15,11 @@ on:
 permissions:
   contents: read
 
-# One deploy per stage at a time; a newer push waits rather than cancelling a
-# deploy halfway.
+# Every stage shares Alchemy's account-level state store. Keep pending cleanup
+# as well as deploys; the default single pending slot can discard either.
 concurrency:
-  group: deploy-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref }}
+  group: foldkit-dials-cloudflare
+  queue: max
   cancel-in-progress: false
 
 env:
@@ -46,12 +47,21 @@ jobs:
           if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set. Deploy stacks/github.ts to set them (see the README)."
+            echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set. Configure Actions secrets (see demo/README.md)."
             exit 1
           else
-            echo "::notice::No deploy credentials yet, so this PR gets no preview. Deploy stacks/github.ts to set them (see the README)."
+            echo "::notice::No deploy credentials yet, so this PR gets no preview. See demo/README.md."
             echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .deploy-safety
+          persist-credentials: false
+      - if: steps.credentials.outputs.ready == 'true'
+        name: Check existing Cloudflare state without bootstrapping
+        run: timeout --signal=TERM --kill-after=5s 110s python3 -I -B .deploy-safety/tooling/cloudflare_preflight.py
       - if: steps.credentials.outputs.ready == 'true'
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -70,8 +80,20 @@ jobs:
       - if: steps.credentials.outputs.ready == 'true'
         run: pnpm test
       - if: steps.credentials.outputs.ready == 'true'
-        run: pnpm build:demo
-      - if: steps.credentials.outputs.ready == 'true'
+        name: Check a queued preview is still open
+        id: lifecycle
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            state="$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" --jq '.state')"
+            case "$state" in
+              open) echo "ready=true" >> "$GITHUB_OUTPUT" ;;
+              closed) echo "ready=false" >> "$GITHUB_OUTPUT" ;;
+              *) echo "::error::Could not establish the current PR state."; exit 1 ;;
+            esac
+          fi
+      - if: steps.credentials.outputs.ready == 'true' && steps.lifecycle.outputs.ready == 'true'
         name: Deploy with Alchemy
         run: pnpm run deploy --stage "$STAGE" --yes
 
@@ -105,6 +127,15 @@ jobs:
       - if: steps.credentials.outputs.ready == 'true'
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          ref: ${{ github.workflow_sha }}
+          path: .deploy-safety
+          persist-credentials: false
+      - if: steps.credentials.outputs.ready == 'true'
+        name: Check existing Cloudflare state without bootstrapping
+        run: timeout --signal=TERM --kill-after=5s 110s python3 -I -B .deploy-safety/tooling/cloudflare_preflight.py
+      - if: steps.credentials.outputs.ready == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - if: steps.credentials.outputs.ready == 'true'
@@ -117,5 +148,15 @@ jobs:
       - if: steps.credentials.outputs.ready == 'true'
         run: pnpm install --frozen-lockfile
       - if: steps.credentials.outputs.ready == 'true'
+        name: Check a queued cleanup is still closed
+        id: lifecycle
+        run: |
+          state="$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" --jq '.state')"
+          case "$state" in
+            closed) echo "ready=true" >> "$GITHUB_OUTPUT" ;;
+            open) echo "ready=false" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Could not establish the current PR state."; exit 1 ;;
+          esac
+      - if: steps.credentials.outputs.ready == 'true' && steps.lifecycle.outputs.ready == 'true'
         name: Destroy the preview with Alchemy
         run: pnpm run destroy --stage "$STAGE" --yes

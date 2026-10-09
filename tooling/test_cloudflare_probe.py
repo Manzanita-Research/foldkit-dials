@@ -90,6 +90,7 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(len(opener.requests), 5)
         for request, timeout in opener.requests:
+            self.assertEqual(request.get_header("User-agent"), "node")
             self.assertEqual(request.get_method(), "GET")
             self.assertIsNone(request.data)
             self.assertEqual(timeout, 10)

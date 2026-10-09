@@ -600,6 +600,146 @@ describe('DialPanel', () => {
       { id: 'v1', name: 'Version 1', values: titled },
     ])
 
+    it('keeps a newer text edit when the initial storage load arrives late', () => {
+      Story.story(
+        updateWith(defaults),
+        Story.given(fresh),
+        Story.message(Message.UpdatedText({ dialId: 'title', value: 'New' })),
+        Story.expectOutMessage(
+          panel.OutMessage.ChangedValues({
+            values: { ...defaults, title: 'New' },
+          }),
+        ),
+        persisted(1),
+        Story.message(
+          Message.CompletedLoadPersisted({
+            maybeJson: Option.some(titledJson),
+          }),
+        ),
+        Story.expectNoOutMessage(),
+        Story.Command.expectNone(),
+        Story.model(model => {
+          expect(model.versions).toEqual([
+            {
+              id: 'v1',
+              name: 'Version 1',
+              values: { ...defaults, title: 'New' },
+            },
+          ])
+        }),
+      )
+    })
+
+    it('keeps a newer slider edit and locally saved versions after a delayed load', () => {
+      const edited = step(
+        fresh,
+        Message.GotSliderMessage({
+          dialId: 'radius',
+          message: ScrubSlider.Message.PressedKeyboardNavigation({
+            direction: 'StepIncrement',
+            value: 41,
+          }),
+        }),
+      )
+      Story.story(
+        updateWith({ ...defaults, radius: 42 }),
+        Story.given(edited),
+        Story.message(Message.ClickedSaveVersion()),
+        persisted(2),
+        Story.message(
+          Message.CompletedLoadPersisted({
+            maybeJson: Option.some(
+              storedPanel('v1', [
+                {
+                  id: 'v1',
+                  name: 'Version 1',
+                  values: { ...defaults, radius: 7 },
+                },
+              ]),
+            ),
+          }),
+        ),
+        Story.expectNoOutMessage(),
+        Story.model(model => {
+          expect(model.activeVersionId).toBe('v2')
+          expect(model.versions).toHaveLength(2)
+          expect(model.versions).toContainEqual({
+            id: 'v2',
+            name: 'Version 2',
+            values: { ...defaults, radius: 42 },
+          })
+        }),
+      )
+    })
+
+    it('restores before edits, accepts the next edit, and consumes the load only once', () => {
+      Story.story(
+        updateWith(titled),
+        Story.given(fresh),
+        Story.message(
+          Message.CompletedLoadPersisted({
+            maybeJson: Option.some(titledJson),
+          }),
+        ),
+        Story.expectOutMessage(
+          panel.OutMessage.ChangedValues({ values: titled }),
+        ),
+        Story.message(
+          Message.CompletedLoadPersisted({
+            maybeJson: Option.some(titledJson),
+          }),
+        ),
+        Story.expectNoOutMessage(),
+        Story.message(Message.UpdatedText({ dialId: 'title', value: 'New' })),
+        Story.expectOutMessage(
+          panel.OutMessage.ChangedValues({
+            values: { ...titled, title: 'New' },
+          }),
+        ),
+        persisted(1),
+      )
+    })
+
+    it('still restores after a rejected edit and a header gesture', () => {
+      Story.story(
+        updateWith(defaults),
+        Story.given(fresh),
+        Story.message(
+          Message.UpdatedText({ dialId: 'accent', value: 'banana' }),
+        ),
+        Story.expectNoOutMessage(),
+        Story.message(Message.PressedPanelHeader({ clientX: 10, clientY: 10 })),
+        Story.message(Message.CancelledPanelDrag()),
+        Story.message(
+          Message.CompletedLoadPersisted({
+            maybeJson: Option.some(titledJson),
+          }),
+        ),
+        Story.expectOutMessage(
+          panel.OutMessage.ChangedValues({ values: titled }),
+        ),
+      )
+    })
+
+    it('ignores storage completion when persistence is disabled', () => {
+      const plain = make({ name: 'Plain', schema: Tuning })
+      Story.story(
+        (model: Model, message: Message) =>
+          plain.update(model, message, defaults),
+        Story.given(plain.init().model),
+        Story.message(
+          Message.CompletedLoadPersisted({
+            maybeJson: Option.some(titledJson),
+          }),
+        ),
+        Story.expectNoOutMessage(),
+        Story.Command.expectNone(),
+        Story.model(model => {
+          expect(model.versions).toEqual(fresh.versions)
+        }),
+      )
+    })
+
     it('waits after each edit and saves the versions as JSON when the latest wait ends', () => {
       Story.story(
         updateWith(defaults),
@@ -847,7 +987,9 @@ describe('DialPanel', () => {
         Story.Command.expectNone(),
         Story.expectNoOutMessage(),
         Story.model(model => {
-          expect(model).toBe(fresh)
+          expect(model).toEqual(
+            modifyFields(fresh, { isPersistLoadPending: () => false }),
+          )
         }),
       )
     })
@@ -1206,6 +1348,76 @@ describe('DialPanel', () => {
   })
 
   describe('panel chrome', () => {
+    it.each(['Pressing', 'Dragging'])(
+      'cancels a %s header gesture and allows a fresh click without a trailing click',
+      activity => {
+        const pressed = step(
+          fresh,
+          Message.PressedPanelHeader({ clientX: 10, clientY: 10 }),
+        )
+        const start =
+          activity === 'Dragging'
+            ? step(
+                pressed,
+                Message.MovedPanelPointer({ clientX: 60, clientY: 40 }),
+              )
+            : pressed
+        Story.story(
+          updateWith(defaults),
+          Story.given(start),
+          Story.message(Message.CancelledPanelDrag()),
+          Story.model(model => {
+            expect(model.offset).toEqual({ x: 0, y: 0 })
+            expect(model.headerDrag._tag).toBe('Dropped')
+          }),
+          Story.message(Message.CancelledPanelDrag()),
+          Story.message(
+            Message.MovedPanelPointer({ clientX: 100, clientY: 80 }),
+          ),
+          Story.message(Message.ReleasedPanelPointer()),
+          Story.message(
+            Message.PressedPanelHeader({ clientX: 20, clientY: 20 }),
+          ),
+          Story.message(Message.ReleasedPanelPointer()),
+          Story.message(Message.ToggledPanel({ isOpen: false })),
+          Story.model(model => {
+            expect(model.isOpen).toBe(false)
+            expect(model.offset).toEqual({ x: 0, y: 0 })
+          }),
+        )
+      },
+    )
+
+    it('cancels a header drag on window blur, restoring the previous offset and suppressing its click', () => {
+      const positioned = modifyFields(fresh, {
+        offset: () => ({ x: 15, y: -8 }),
+      })
+      Story.story(
+        updateWith(defaults),
+        Story.given(positioned),
+        Story.message(Message.PressedPanelHeader({ clientX: 10, clientY: 10 })),
+        Story.message(Message.MovedPanelPointer({ clientX: 60, clientY: 40 })),
+        Story.message(Message.BlurredWindow()),
+        Story.model(model => {
+          expect(model.headerDrag._tag).toBe('Dropped')
+          expect(model.offset).toEqual({ x: 15, y: -8 })
+        }),
+        Story.message(Message.MovedPanelPointer({ clientX: 100, clientY: 80 })),
+        Story.message(Message.ReleasedPanelPointer()),
+        Story.message(Message.ToggledPanel({ isOpen: false })),
+        Story.model(model => {
+          expect(model.isOpen).toBe(true)
+          expect(model.offset).toEqual({ x: 15, y: -8 })
+          expect(model.headerDrag._tag).toBe('Idle')
+        }),
+        Story.message(Message.PressedPanelHeader({ clientX: 20, clientY: 20 })),
+        Story.message(Message.ReleasedPanelPointer()),
+        Story.message(Message.ToggledPanel({ isOpen: false })),
+        Story.model(model => {
+          expect(model.isOpen).toBe(false)
+        }),
+      )
+    })
     it('toggles the panel from its header', () => {
       Story.story(
         updateWith(defaults),

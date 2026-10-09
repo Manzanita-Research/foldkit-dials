@@ -111,7 +111,10 @@ const schedulePersist =
       onSome: () => {
         const version = Number.increment(model.persistVersion)
         return {
-          model: modifyFields(model, { persistVersion: () => version }),
+          model: modifyFields(model, {
+            persistVersion: () => version,
+            isPersistLoadPending: () => false,
+          }),
           commands: [WaitBeforePersist({ version })],
         }
       },
@@ -190,16 +193,22 @@ const loadPersisted = (
   spec: PanelSpec,
   model: Model,
   maybeJson: Option.Option<string>,
-): UpdateReturn =>
-  pipe(
+): UpdateReturn => {
+  if (!model.isPersistLoadPending) {
+    return { model }
+  }
+
+  const loaded = modifyFields(model, { isPersistLoadPending: () => false })
+  return pipe(
     maybeJson,
     Option.flatMap(decodePersistedPanel),
     Option.filter(({ versions }) => Array.isReadonlyArrayNonEmpty(versions)),
     Option.match({
-      onNone: () => ({ model }),
-      onSome: persisted => restorePersisted(spec, model, persisted),
+      onNone: () => ({ model: loaded }),
+      onSome: persisted => restorePersisted(spec, loaded, persisted),
     }),
   )
+}
 
 // VALUES
 
@@ -654,6 +663,18 @@ const releasedHeaderDrag = HeaderDrag.match<HeaderDrag>({
   Dropped: () => HeaderDrag.Dropped(),
 })
 
+const cancelPanelHeader = (model: Model): Model => {
+  if (HeaderDrag.isAnyOf(['Pressing', 'Dragging'])(model.headerDrag)) {
+    const { originOffset } = model.headerDrag
+    return modifyFields(model, {
+      offset: () => originOffset,
+      headerDrag: () => HeaderDrag.Dropped(),
+    })
+  } else {
+    return model
+  }
+}
+
 /** Opens or closes the panel, unless this is the click that ends a header
  *  drag. */
 const togglePanel = (model: Model, isOpen: boolean): Model =>
@@ -721,6 +742,10 @@ export const update =
 
       ToggledPanel: ({ isOpen }) => ({ model: togglePanel(model, isOpen) }),
 
+      ToggledPanelWithKeyboard: ({ isOpen }) => ({
+        model: modifyFields(model, { isOpen: () => isOpen }),
+      }),
+
       PressedPanelHeader: ({ clientX, clientY }) => ({
         model: modifyFields(model, {
           headerDrag: () =>
@@ -738,6 +763,8 @@ export const update =
       ReleasedPanelPointer: () => ({
         model: modifyFields(model, { headerDrag: releasedHeaderDrag }),
       }),
+
+      CancelledPanelDrag: () => ({ model: cancelPanelHeader(model) }),
 
       GotVersionMenuMessage: ({ message: menuMessage }) =>
         foldVersionMenu(model, menuMessage),
@@ -829,7 +856,7 @@ export const update =
       }),
 
       BlurredWindow: () => ({
-        model: modifyFields(model, {
+        model: modifyFields(cancelPanelHeader(model), {
           heldShortcutKeys: () => [],
           maybeShortcutModifier: () => Option.none(),
           shortcutPointer: () => ShortcutPointer.Idle(),

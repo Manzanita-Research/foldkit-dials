@@ -1269,7 +1269,7 @@ const compareBannerView = (context: Context): ReadonlyArray<Html> => {
 
 // PANEL
 
-const headerPointerAttributes = (
+const headerInteractionAttributes = (
   context: Context,
   layout: Layout,
 ): ReadonlyArray<Attribute<Message>> => {
@@ -1290,6 +1290,12 @@ const headerPointerAttributes = (
               Message.PressedPanelHeader({ clientX, clientY }),
               () => button === LEFT_MOUSE_BUTTON,
             ),
+        ),
+        h.OnKeyDownPreventDefault(key =>
+          Option.liftPredicate(
+            Message.ToggledPanelWithKeyboard({ isOpen: !context.model.isOpen }),
+            () => key === 'Enter' || key === ' ',
+          ),
         ),
       ]
     : []
@@ -1323,8 +1329,13 @@ const sectionView = (context: Context, layout: Layout): Html => {
               [
                 h.button(
                   [
-                    ...button,
-                    ...headerPointerAttributes(context, layout),
+                    ...Array.filter(
+                      button,
+                      attribute =>
+                        layout !== 'Floating' ||
+                        attribute._tag !== 'OnKeyDownPreventDefault',
+                    ),
+                    ...headerInteractionAttributes(context, layout),
                     h.Class('dialkit-folder-header-top'),
                   ],
                   [

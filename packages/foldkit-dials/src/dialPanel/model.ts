@@ -48,7 +48,11 @@ const Point = Schema.Struct({ x: Schema.Number, y: Schema.Number })
 
 /** A press on a floating panel's header. A press that moves past the drag
  *  threshold drags the panel. `Dropped` follows a drag: the browser fires a
- *  click when the drag ends, and that click must not toggle the panel. */
+ *  click when the drag ends, and that click must not toggle the panel.
+ *  Cancellation restores the press's original offset, like a scrub slider
+ *  restores its value, and also enters `Dropped` to suppress a trailing pointer
+ *  click. Keyboard activation bypasses that suppression, and a fresh press
+ *  starts normally even if no trailing click arrived. */
 export const HeaderDrag = defineTaggedUnion({
   Idle: {},
   Pressing: { pointer: Point, originOffset: Point },
@@ -75,7 +79,9 @@ export type CopyStatus = typeof CopyStatus.Type
  *  passed to `update` and `view`. The panel owns its versions, its open and
  *  drag state, and each control's interaction state. `persistVersion` and
  *  `copyVersion` count the waits started, so only the latest wait acts.
- *  `isSaveFailed` holds whether the last save to storage failed. */
+ *  `isSaveFailed` holds whether the last save to storage failed.
+ *  `isPersistLoadPending` allows one initial restore until a value or version
+ *  edit takes ownership of the state. */
 export const Model = Schema.Struct({
   isOpen: Schema.Boolean,
   offset: Point,
@@ -88,6 +94,7 @@ export const Model = Schema.Struct({
   copyStatus: CopyStatus,
   copyVersion: Schema.Number,
   persistVersion: Schema.Number,
+  isPersistLoadPending: Schema.Boolean,
   isSaveFailed: Schema.Boolean,
   toggledFolderKeys: Schema.Array(Schema.String),
   heldShortcutKeys: Schema.Array(Schema.String),
@@ -136,6 +143,7 @@ export const initModel = (spec: PanelSpec): Model => ({
   copyStatus: 'Idle',
   copyVersion: 0,
   persistVersion: 0,
+  isPersistLoadPending: Option.isSome(spec.maybePersist),
   isSaveFailed: false,
   toggledFolderKeys: [],
   heldShortcutKeys: [],

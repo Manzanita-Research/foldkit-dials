@@ -38,8 +38,10 @@ other. `CardDials.defaults` is its initial value.
 npm install foldkit-dials
 ```
 
-Peer dependencies: `foldkit` and `@foldkit/ui` 0.166 or later, and `effect` 4.
-A Foldkit app already has them. The package ships ES modules with type
+Verified peer dependencies: `foldkit` and `@foldkit/ui` **0.166.0**, and
+`effect` and `@effect/platform-browser` **4.0.0**. Future versions need the
+packed consumer and browser checks before widening these ranges.
+The package ships ES modules with type
 declarations, and the stylesheet is `foldkit-dials/styles.css`.
 
 ## Styling with Pleat (optional)

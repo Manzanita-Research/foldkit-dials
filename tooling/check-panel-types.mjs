@@ -1,9 +1,12 @@
+import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import {
   cpSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -79,13 +82,56 @@ try {
     ),
   )
   execFileSync('tar', ['-xzf', join(consumer, packed.filename), '-C', consumer])
-  symlinkSync(join(consumer, 'package'), join(modules, 'foldkit-dials'))
+  renameSync(join(consumer, 'package'), join(modules, 'foldkit-dials'))
   const { paths, baseUrl, customConditions, ...consumerOptions } =
     source.options
-  check([consumerFixture], { ...consumerOptions, types: [] })
+  const packedOptions = {
+    ...consumerOptions,
+    module: ts.ModuleKind.NodeNext,
+    moduleResolution: ts.ModuleResolutionKind.NodeNext,
+    types: [],
+  }
+  const installedLibrary = join(modules, 'foldkit-dials')
+  const packedManifest = JSON.parse(
+    readFileSync(join(installedLibrary, 'package.json'), 'utf8'),
+  )
+  const declarations = realpathSync(
+    resolve(installedLibrary, packedManifest.exports['.'].types),
+  )
+  const resolvedTypes = ts.resolveModuleName(
+    'foldkit-dials',
+    consumerFixture,
+    packedOptions,
+    ts.sys,
+    undefined,
+    undefined,
+    ts.ModuleKind.ESNext,
+  ).resolvedModule
+  assert.ok(resolvedTypes, 'The public declaration export must resolve.')
+  assert.equal(
+    realpathSync(declarations),
+    realpathSync(resolvedTypes.resolvedFileName),
+  )
+  check([consumerFixture], packedOptions)
+  cpSync(
+    resolve('tooling/type-fixtures/runtime.mjs'),
+    join(consumer, 'runtime.mjs'),
+  )
+  execFileSync(
+    process.execPath,
+    [
+      '--import',
+      resolve('tooling/type-fixtures/browser-globals.mjs'),
+      'runtime.mjs',
+    ],
+    {
+      cwd: consumer,
+      stdio: 'inherit',
+    },
+  )
   if (!process.exitCode) {
     console.log(
-      'DialPanel fixtures pass against source and packed package (no source aliases).',
+      `DialPanel fixtures pass against source and packed package (NodeNext, no source aliases). Verified peers: ${JSON.stringify(dependencies)}`,
     )
   }
 } finally {

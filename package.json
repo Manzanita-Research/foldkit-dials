@@ -15,13 +15,16 @@
     "format": "oxfmt -c .oxfmtrc.json --write",
     "format:check": "oxfmt -c .oxfmtrc.json --check",
     "test:deploy": "python3 -I -B tooling/test_cloudflare_probe.py && python3 -I -B tooling/test_cloudflare_preflight.py && node --test tooling/test-demo-deploy.mjs tooling/test-deploy-workflow.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm test:deploy && pnpm typecheck && pnpm test && pnpm build:demo && pnpm build:library && pnpm --filter foldkit-dials pack --dry-run && pnpm typecheck:panel-consumer",
+    "check": "python3 tooling/with-heavy-lock.py pnpm run check:repository",
     "deploy": "pnpm --filter @foldkit-dials/demo run deploy",
     "setup:demo": "pnpm --filter @foldkit-dials/demo run setup",
     "deploy:prod": "pnpm --filter @foldkit-dials/demo run deploy:prod",
     "deploy:personal": "pnpm --filter @foldkit-dials/demo run deploy:personal",
     "destroy:personal": "pnpm --filter @foldkit-dials/demo run destroy:personal",
-    "destroy": "pnpm --filter @foldkit-dials/demo run destroy"
+    "destroy": "pnpm --filter @foldkit-dials/demo run destroy",
+    "test:smoke": "pnpm --filter @foldkit-dials/browser-tests run check",
+    "test:browser": "pnpm --filter @foldkit-dials/browser-tests run test",
+    "check:repository": "pnpm format:check && pnpm lint && pnpm test:deploy && pnpm typecheck && pnpm test && pnpm test:smoke && pnpm --filter foldkit-dials pack --dry-run"
   },
   "devDependencies": {
     "@foldkit/oxlint-plugin": "0.15.2",

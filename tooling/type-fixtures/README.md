@@ -14,7 +14,11 @@ node tooling/check-panel-types.mjs
 
 The fixture checks nested and literal dial values, typed OutMessage construction and exhaustive matching, comparison values, required/optional/no-argument init inference, the app and attach Message union, Schema access, Runtime integration, views, lifted Subscriptions, and history exclusions. `@ts-expect-error` cases reject invalid Schemas, values, init arguments, Messages, read/write callbacks, and action results.
 
-The same fixture compiles against the workspace source and against an actual npm tarball extracted into a temporary consumer. The latter uses package exports with no TypeScript paths, baseUrl, or source conditions. Temporary files are removed on success and failure. CI runs this check after the library build.
+The same fixture compiles against the workspace source and against an actual npm tarball extracted into a temporary consumer's `node_modules`. The latter uses NodeNext package exports with no TypeScript paths, baseUrl, or source conditions. Peer dependencies link to the exact catalog-pinned installed copies; the library is a disposable tarball copy. The script prints the verified peer versions. Temporary files are removed on success and failure.
+
+`runtime.mjs` imports only public package entry points, resolves and reads the stylesheet export, and asserts `make`/`attach` initialization and reset behavior. Node's ESM loader traverses the public JS graph, catching missing `.js` paths. `browser-globals.mjs` supplies `window` and `document` using the existing root Happy DOM tool, since subscriptions reference browser globals at module evaluation. The package's published types and runtime never resolve to library source, and the fixture boots no Runtime.
+
+`pnpm test:smoke` builds both artifacts, runs these consumer checks and the focused Playwright suite in `tooling/browser`. `pnpm check` runs the same command in CI. See the root README for browser setup, the shared heavy-job lock, failure artifacts and supported peer versions.
 
 ## Declaration measurement
 

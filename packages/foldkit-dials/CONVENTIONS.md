@@ -1,18 +1,23 @@
 # foldkit-dials conventions
 
-This package follows `@foldkit/ui`'s conventions exactly, and Foldkit's `AGENTS.md`. When this file and those disagree, those win.
+Read the project's [AGENTS.md](../../AGENTS.md) and canonical
+[FOLDKIT.md](../../FOLDKIT.md) first. This file adds stable library-specific
+guidance. Use the release-pinned `@foldkit/ui` as the closest component
+precedent; upstream repository maintenance instructions do not govern
+this workspace. The demo follows application conventions instead.
 
 ## Read before writing
 
-- Foldkit `AGENTS.md`: [`AGENTS.md`](https://github.com/foldkit/foldkit/blob/main/AGENTS.md) in the Foldkit repo. It has naming, state modeling, code style, comments, and prose rules. Read all of it.
-- `@foldkit/ui` source: [`packages/ui/src/`](https://github.com/foldkit/foldkit/tree/main/packages/ui/src) in the Foldkit repo. These are the closest precedents:
+- Framework guidance: [FOLDKIT.md](../../FOLDKIT.md); release code practices
+  in [repos/foldkit/AGENTS.md](../../repos/foldkit/AGENTS.md).
+- `@foldkit/ui` source: [`packages/ui/src/`](../../repos/foldkit/packages/ui/src) in the Foldkit repo. These are the closest precedents:
   - `slider/` for a headless, parent-owned-value component with drag Subscriptions, plus its `index.test.ts` and `scene.test.ts`.
   - `popover/` for an anchored floating panel (Mount + Floating UI), Commands, and OutMessage.
   - `radioGroup/` for a `create<Value>()` factory with roving focus.
 - Our exemplar is `src/scrubSlider/`: `index.ts`, `public.ts`, `index.test.ts` (Story), and `scene.test.ts` (Scene). Copy its shape.
 - Shared helpers live in `src/internal/` (`range.ts`, `selectors.ts`, `accessibleName.ts`). Reuse them; add to them only when two components need the same thing.
 - Domain modules: `src/transition/` (spring and easing math, the `Transition` union) and `src/dial/` (dial Schemas).
-- Framework source for exact APIs: [`packages/foldkit/src/`](https://github.com/foldkit/foldkit/tree/main/packages/foldkit/src) in the Foldkit repo. Effect 4 types: `node_modules/effect/dist/*.d.ts`. Read real signatures; don't guess.
+- Framework source for exact APIs: [`packages/foldkit/src/`](../../repos/foldkit/packages/foldkit/src) in the Foldkit repo. Effect 4 types: `node_modules/effect/dist/*.d.ts` from this package directory. Read real signatures; don't guess.
 
 ## Component shape
 
@@ -44,18 +49,31 @@ This package follows `@foldkit/ui`'s conventions exactly, and Foldkit's `AGENTS.
 
 - Story tests: `import * as Story from 'foldkit/story'`, plus `describe`, `expect`, `it` from `vitest`. Resolve every Command a step produces (`Story.Command.resolve`, `Story.Command.expectExact`).
 - Scene tests: `import * as Scene from 'foldkit/scene'`, with `Scene.withViewInputs(view, { ... })` and a small `inertHtml` `toView`. Test roles and ARIA attributes, keyboard behaviour, and OutMessages. Pointer handlers that measure the DOM can't run in Scene, so cover drags in Story tests through the Messages.
-- Every behaviour you build gets a test. Watch one fail before you trust it: break the code, run the test, see it fail, then restore.
+- Cover changed behavior with meaningful Story/Scene tests. Keep existing
+  `index.test.ts` filenames; new test files may follow the canonical
+  `story.test.ts` naming. The existing namespace import style is supported
+  and need not be changed during unrelated work.
 - Commands, from the repo root:
   - Typecheck: `node_modules/.bin/tsc --noEmit -p tsconfig.json`.
   - Test: `node_modules/.bin/vitest run packages/foldkit-dials/src/<name>`.
   - Lint: `node_modules/.bin/oxlint --disable-nested-config -c oxlint.foldkit.json packages/foldkit-dials/src/<name>`. This runs general correctness and Foldkit's lint plugin (`all.json`) from the root installation. `pnpm lint` also checks repository config, stacks and tooling with the general preset.
   - Format: `tooling/format.sh <files>`.
   - Repository check: `pnpm check`. CI runs this command after one frozen root install; it includes formatting, lint, types, tests, both builds, package contents and the source/packed consumer fixture.
-- A type assertion that cannot be avoided takes `/* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */` plus a `// NOTE:` saying why, as in `@foldkit/ui`.
+- Preserve explicit public factory return types, especially DialPanel.
+  `pnpm typecheck:panel-consumer` checks source and packed consumers.
+- Avoid type assertions; if an exception is required, explain it with
+  `// NOTE:` and use the installed Oxlint rule name in a narrow suppression.
 
-## Don't
+## Workspace boundaries
 
-- Don't install packages during a scoped component edit. Workspace maintenance assignments may explicitly authorize a root install. Root `pnpm run`/`pnpm exec` reject a stale installation instead of installing implicitly.
-- Don't start a dev server.
-- Don't edit files outside your assigned folders. If you need a shared helper changed, say so in your report.
-- Don't commit. The lead integrates and commits.
+- Keep runtime boot in the demo. Library modules export definitions,
+  helpers and public types; importing them must not start a Runtime.
+- Relative library imports end in `.js` for declaration consumers. Demo
+  imports may follow its bundler conventions.
+- Package dependencies belong in the library manifest; shared tools belong
+  at the root and demo-only tooling stays in the demo. Use one root install.
+- Treat `repos/` as read-only references. Import installed npm packages,
+  never reference source. Preserve stylesheet attribution and licenses.
+- Installs, short-lived dev servers, commits and PRs are normal development
+  actions when the assignment calls for them. Follow root AGENTS.md and
+  the assignment's scope/review rules; stop servers when finished.

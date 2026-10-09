@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "foldkit-devtools": {
+      "command": "pnpm",
+      "args": [
+        "--filter",
+        "@foldkit-dials/demo",
+        "exec",
+        "foldkit-devtools-mcp"
+      ]
+    }
+  }
+}

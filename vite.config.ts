@@ -23,6 +23,7 @@ export default defineConfig({
   root: resolve(import.meta.dirname, 'demo'),
   plugins: [foldkit(), serveDevToolsHostFromSource()],
   resolve: {
+    conditions: ['@pleat/source', 'module', 'browser', 'development|production'],
     alias: [
       { find: /^foldkit-dials\/styles\.css$/, replacement: resolve(packageSource, 'styles/dials.css') },
       { find: /^foldkit-dials$/, replacement: resolve(packageSource, 'index.ts') },

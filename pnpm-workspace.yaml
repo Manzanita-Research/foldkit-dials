@@ -13,3 +13,12 @@ minimumReleaseAgeExclude:
   - '@foldkit/ui@0.166.0'
   - '@foldkit/vite-plugin@0.26.1'
   - foldkit@0.166.0
+
+# Pleat is not on npm yet. Its adapter's workspace dependency resolves to the
+# same pinned source as the demo's direct dependency.
+overrides:
+  '@pleat/foldkit>@pleat/core': 'github:Manzanita-Research/pleat#1e24c0933de70edac72ae4669d7376a6e14d7033&path:/packages/core'
+
+# Required for the adapter to use the pinned Git source above. Remove together
+# with the Git pins/override once Pleat is published. Install scripts stay off.
+blockExoticSubdeps: false

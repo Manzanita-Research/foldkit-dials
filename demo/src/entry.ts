@@ -1,5 +1,4 @@
 import 'foldkit-dials/styles.css'
-import './styles.css'
 import { Runtime } from 'foldkit'
 import { DialPanel } from 'foldkit-dials'
 import { modifyFields } from 'foldkit/struct'

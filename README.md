@@ -8,6 +8,20 @@ Live tuning controls for [Foldkit](https://foldkit.dev) apps, after Josh Puckett
 
 Install with `npm install foldkit-dials`. Status: early (0.1.0). Built on `foldkit` 0.166 and `effect` 4.0.
 
+## Styling with Pleat (optional)
+
+[Pleat](https://github.com/Manzanita-Research/pleat) is optional, but encouraged
+for styling Foldkit apps. Dials works with any CSS; Pleat is not a dependency
+or peer dependency of `foldkit-dials`. Keep importing `foldkit-dials/styles.css`
+for the controls.
+
+The demo uses Pleat's `Style` and `Recipe` for its card and layouts, and `Var`
+bindings to apply live dial values without compiling styles on each frame.
+See [`demo/src/styles.ts`](demo/src/styles.ts) and
+[`demo/src/main.ts`](demo/src/main.ts) for the wiring. Until Pleat is published
+to npm, the demo pins its two packages to a GitHub commit and resolves their
+`@pleat/source` exports.
+
 ## Deploy the demo
 
 CI deploys the demo to a Cloudflare Worker with [Alchemy](https://alchemy.run/cloudflare/frontend/foldkit/):

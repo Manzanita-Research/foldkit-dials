@@ -42,6 +42,32 @@ Peer dependencies: `foldkit` and `@foldkit/ui` 0.166 or later, and `effect` 4.
 A Foldkit app already has them. The package ships ES modules with type
 declarations, and the stylesheet is `foldkit-dials/styles.css`.
 
+## Styling with Pleat (optional)
+
+[Pleat](https://github.com/Manzanita-Research/pleat) is optional, but encouraged
+for styling your Foldkit app. Dials works with any CSS and does not require
+Pleat. Keep importing `foldkit-dials/styles.css` for the panel itself.
+
+With Pleat, define styles once and bind dial values in the view:
+
+```ts
+import { Style, Var } from '@pleat/core'
+import { css } from '@pleat/foldkit'
+
+const radius = Var.string('card-radius')
+const cardStyle = Style.make({ padding: 20, borderRadius: radius })
+
+// Inside your view:
+h.article(
+  [...css(cardStyle, Var.bind(radius, `${model.tuning.radius}px`))],
+  [model.tuning.title],
+)
+```
+
+The [demo](https://github.com/Manzanita-Research/foldkit-dials/tree/main/demo/src)
+uses recipes for layouts and variables for live tuning. Follow Pleat's repo
+for setup; its packages are not yet published to npm.
+
 ## Attach a panel
 
 `DialPanel.attach` wraps a program. It adds the panel's Model, Messages,

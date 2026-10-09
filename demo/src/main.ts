@@ -1,4 +1,4 @@
-import { Option, Schema, String } from 'effect'
+import { Option, Schema } from 'effect'
 import { Runtime, Subscription, Update } from 'foldkit'
 import { DialTimeline, Frame, Transition } from 'foldkit-dials'
 import type { Document, HtmlBuilder } from 'foldkit/html'
@@ -6,9 +6,12 @@ import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
 import { Button } from '@foldkit/ui'
+import { Var } from '@pleat/core'
+import { css } from '@pleat/foldkit'
 
 import { INTRO_DURATION_SECONDS, IntroDock } from './intro'
 import { SpringState, isAtRest, restingAt, step } from './spring'
+import * as Styles from './styles'
 import { CardDials, CardTuning } from './tuning'
 
 // MODEL
@@ -75,9 +78,7 @@ const springToward = (model: Model, target: number): SpringState =>
     ? restingAt(target)
     : modifyFields(model.spring, { target: () => target })
 
-const foldIntroOutMessage = IntroDock.OutMessage.match<
-  Update.Step<Model, Message>
->({
+const foldIntroOutMessage = IntroDock.OutMessage.match<Update.Step<Model, Message>>({
   ChangedVisibility: () => model => ({ model }),
 })
 
@@ -135,10 +136,8 @@ export const update = (model: Model, message: Message) =>
       isReducedMotion
         ? reduceMotion(model)
         : { model: modifyFields(model, { isReducedMotion: () => false }) },
-    GotIntroMessage: ({ message: introMessage }) =>
-      foldIntro(model, introMessage),
-    GotIntroFrameMessage: ({ message: introMessage }) =>
-      foldIntro(model, introMessage),
+    GotIntroMessage: ({ message: introMessage }) => foldIntro(model, introMessage),
+    GotIntroFrameMessage: ({ message: introMessage }) => foldIntro(model, introMessage),
   })
 
 // SUBSCRIPTION
@@ -187,9 +186,23 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   return {
     title: 'foldkit-dials demo',
     body: h.main(
-      [h.Class('demo')],
+      [...css(Styles.demo)],
       [
-        h.h1([h.Class('demo-title')], ['foldkit-dials demo']),
+        h.h1([...css(Styles.demoTitle)], ['foldkit-dials demo']),
+        h.p(
+          [...css(Styles.pleatNote)],
+          [
+            'Styled with ',
+            h.a(
+              [
+                h.Href('https://github.com/Manzanita-Research/pleat'),
+                ...css(Styles.pleatLink),
+              ],
+              ['Pleat'],
+            ),
+            '. Optional, but encouraged for styling your Foldkit apps. Dials works with any CSS.',
+          ],
+        ),
         Button.view(
           {
             onClick: Message.ClickedCard(),
@@ -197,64 +210,81 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
               h.button(
                 [
                   ...button,
-                  h.Class(
-                    `demo-card demo-card--${String.toLowerCase(tuning.layout)}`,
-                  ),
                   h.AriaPressed(model.isLifted ? 'true' : 'false'),
-                  h.Style({
-                    borderRadius: `${tuning.radius}px`,
-                    boxShadow: shadowOf(tuning, progress),
-                    opacity: `${card.current.opacity}`,
-                    transform: `translateY(${card.current.y - tuning.lift * progress}px) scale(${1 + LIFT_SCALE_GAIN * progress})`,
-                    transition: `border-radius ${fade}, background-color ${fade}`,
-                    '--accent': tuning.accent,
-                  }),
+                  ...css(
+                    Styles.card({ layout: tuning.layout }),
+                    Var.bind(Styles.live.radius, `${tuning.radius}px`),
+                    Var.bind(Styles.live.shadow, shadowOf(tuning, progress)),
+                    Var.bind(Styles.live.opacity, card.current.opacity),
+                    Var.bind(
+                      Styles.live.transform,
+                      `translateY(${card.current.y - tuning.lift * progress}px) scale(${1 + LIFT_SCALE_GAIN * progress})`,
+                    ),
+                    Var.bind(
+                      Styles.live.transition,
+                      `border-radius ${fade}, background-color ${fade}`,
+                    ),
+                    Var.bind(Styles.live.accent, tuning.accent),
+                  ),
                 ],
                 [
                   h.span(
                     [
-                      h.Class('demo-card__badge'),
-                      h.Style({ transform: `scale(${badge.current.scale})` }),
+                      ...css(
+                        Styles.badge,
+                        Var.bind(
+                          Styles.live.badgeTransform,
+                          `scale(${badge.current.scale})`,
+                        ),
+                      ),
                     ],
                     ['New'],
                   ),
                   h.div(
                     [
-                      h.Class('demo-card__art'),
-                      h.Style({
-                        borderRadius: `${Math.max(0, tuning.radius - ART_RADIUS_INSET_PX)}px`,
-                        backgroundImage:
-                          tuning.cover === ''
-                            ? 'none'
-                            : `url("${tuning.cover}")`,
-                        '--glow-x': `${GLOW_CENTER_PERCENT + tuning.glow.x * GLOW_HALF_RANGE_PERCENT}%`,
-                        '--glow-y': `${GLOW_CENTER_PERCENT - tuning.glow.y * GLOW_HALF_RANGE_PERCENT}%`,
-                      }),
+                      ...css(
+                        Styles.art({ layout: tuning.layout }),
+                        Var.bind(
+                          Styles.live.artRadius,
+                          `${Math.max(0, tuning.radius - ART_RADIUS_INSET_PX)}px`,
+                        ),
+                        Var.bind(
+                          Styles.live.cover,
+                          tuning.cover === '' ? 'none' : `url("${tuning.cover}")`,
+                        ),
+                        Var.bind(
+                          Styles.live.glowX,
+                          `${GLOW_CENTER_PERCENT + tuning.glow.x * GLOW_HALF_RANGE_PERCENT}%`,
+                        ),
+                        Var.bind(
+                          Styles.live.glowY,
+                          `${GLOW_CENTER_PERCENT - tuning.glow.y * GLOW_HALF_RANGE_PERCENT}%`,
+                        ),
+                      ),
                     ],
                     [
                       h.span(
                         [
-                          h.Class('demo-card__sparkle'),
                           h.AriaHidden(true),
-                          h.Style({
-                            transform: `rotate(${sparkle.current.rotate}deg) scale(${sparkle.current.scale})`,
-                          }),
+                          ...css(
+                            Styles.sparkle,
+                            Var.bind(
+                              Styles.live.sparkleTransform,
+                              `rotate(${sparkle.current.rotate}deg) scale(${sparkle.current.scale})`,
+                            ),
+                          ),
                         ],
                         ['✦'],
                       ),
                     ],
                   ),
                   h.div(
-                    [h.Class('demo-card__text')],
+                    [...css(Styles.text)],
                     [
-                      h.span([h.Class('demo-card__title')], [tuning.title]),
+                      h.span([...css(Styles.title)], [tuning.title]),
                       h.span(
-                        [h.Class('demo-card__subtitle')],
-                        [
-                          model.isLifted
-                            ? 'Lifted. Click to drop.'
-                            : 'Click to lift.',
-                        ],
+                        [...css(Styles.subtitle)],
+                        [model.isLifted ? 'Lifted. Click to drop.' : 'Click to lift.'],
                       ),
                     ],
                   ),

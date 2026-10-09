@@ -1,10 +1,12 @@
 import { Array, Effect, Fiber, Option, Record, Schema, Stream } from 'effect'
+import { modifyFields } from 'foldkit/struct'
 import * as Subscription from 'foldkit/subscription'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import * as Dial from '../dial/index.js'
 import { make } from './index.js'
 import { Message } from './message.js'
+import { HeaderDrag } from './model.js'
 
 const Tuning = Schema.Struct({
   radius: Dial.slider({
@@ -107,9 +109,139 @@ const pressedR = Message.PressedShortcutKey({
 
 afterEach(() => {
   document.body.replaceChildren()
+  vi.restoreAllMocks()
 })
 
 describe('DialPanel subscriptions', () => {
+  describe('header drag', () => {
+    const plain = make({
+      name: 'Plain',
+      schema: Schema.Struct({ title: Dial.text('Hello') }),
+    })
+    const subscription = Option.getOrThrow(
+      Record.get(plain.subscriptions, 'plain:panelHeaderDrag'),
+    )
+    const eventTypes = [
+      'pointermove',
+      'pointerup',
+      'pointercancel',
+      'keydown',
+      'blur',
+    ]
+
+    it.each([HeaderDrag.Idle(), HeaderDrag.Dropped()])(
+      'installs no listeners in $_tag',
+      async headerDrag => {
+        const dependencies = subscription.modelToDependencies(
+          modifyFields(plain.init().model, { headerDrag: () => headerDrag }),
+        )
+        const addDocument = vi.spyOn(document, 'addEventListener')
+        const addWindow = vi.spyOn(window, 'addEventListener')
+        try {
+          const messages = await Effect.runPromise(
+            Stream.runCollect(
+              subscription.dependenciesToStream(
+                dependencies,
+                () => dependencies,
+              ),
+            ),
+          )
+          expect(messages).toEqual([])
+          expect(addDocument).not.toHaveBeenCalled()
+          expect(addWindow).not.toHaveBeenCalled()
+        } finally {
+          addDocument.mockRestore()
+          addWindow.mockRestore()
+        }
+      },
+    )
+
+    it.each([
+      HeaderDrag.Pressing({
+        pointer: { x: 10, y: 10 },
+        originOffset: { x: 0, y: 0 },
+      }),
+      HeaderDrag.Dragging({
+        pointer: { x: 10, y: 10 },
+        originOffset: { x: 0, y: 0 },
+      }),
+    ])(
+      'handles cancellation without shortcuts in $_tag and removes every listener',
+      async headerDrag => {
+        const dependencies = subscription.modelToDependencies(
+          modifyFields(plain.init().model, { headerDrag: () => headerDrag }),
+        )
+        const received: Array<Message> = []
+        const addDocument = vi.spyOn(document, 'addEventListener')
+        const removeDocument = vi.spyOn(document, 'removeEventListener')
+        const addWindow = vi.spyOn(window, 'addEventListener')
+        const removeWindow = vi.spyOn(window, 'removeEventListener')
+        const fiber = Effect.runFork(
+          Stream.runForEach(
+            subscription.dependenciesToStream(dependencies, () => dependencies),
+            message =>
+              Effect.sync(() => {
+                received.push(message)
+              }),
+          ),
+        )
+        try {
+          await vi.waitFor(() => {
+            expect(
+              eventTypes.every(type =>
+                [...addDocument.mock.calls, ...addWindow.mock.calls].some(
+                  ([name]) => name === type,
+                ),
+              ),
+            ).toBe(true)
+          })
+          document.dispatchEvent(
+            new PointerEvent('pointermove', { clientX: 60, clientY: 40 }),
+          )
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }))
+          document.dispatchEvent(new PointerEvent('pointercancel'))
+          document.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Escape' }),
+          )
+          window.dispatchEvent(new FocusEvent('blur'))
+          document.dispatchEvent(new PointerEvent('pointerup'))
+          await vi.waitFor(() => {
+            expect(received).toHaveLength(5)
+          })
+          expect(received).toContainEqual(
+            Message.MovedPanelPointer({ clientX: 60, clientY: 40 }),
+          )
+          expect(
+            received.filter(message => message._tag === 'CancelledPanelDrag'),
+          ).toHaveLength(3)
+          expect(received).toContainEqual(Message.ReleasedPanelPointer())
+        } finally {
+          await Effect.runPromise(Fiber.interrupt(fiber))
+          addDocument.mock.calls.forEach(([type, listener]) => {
+            expect(
+              removeDocument.mock.calls.some(
+                ([removedType, removedListener]) =>
+                  removedType === type && removedListener === listener,
+              ),
+            ).toBe(true)
+          })
+          addWindow.mock.calls.forEach(([type, listener]) => {
+            expect(
+              removeWindow.mock.calls.some(
+                ([removedType, removedListener]) =>
+                  removedType === type && removedListener === listener,
+              ),
+            ).toBe(true)
+          })
+          addDocument.mockRestore()
+          removeDocument.mockRestore()
+          addWindow.mockRestore()
+          removeWindow.mockRestore()
+        }
+      },
+    )
+  })
+
   it('starts every key with the panel id', () => {
     const keys = Record.keys(card.subscriptions)
 

@@ -155,6 +155,78 @@ describe('DialPanel view', () => {
   })
 
   describe('panel header', () => {
+    describe.each([
+      ['pointer cancellation or Escape', Message.CancelledPanelDrag()],
+      ['window blur', Message.BlurredWindow()],
+    ])('keyboard activation after %s', (_name, cancellation) => {
+      describe.each(['Pressing', 'Dragging'])('from %s', activity => {
+        describe.each(['None', 'BeforeKeyboard', 'AfterKeyboard'])(
+          'with trailing click %s',
+          trailingClick => {
+            it.each(['Enter', ' '])('preserves %s activation', key => {
+              Scene.scene(
+                { update, view: sceneView() },
+                Scene.given(model),
+                Scene.pointerDown(header, { clientX: 10, clientY: 10 }),
+                ...(activity === 'Dragging'
+                  ? [
+                      Scene.Subscription.emit(
+                        Message.MovedPanelPointer({ clientX: 60, clientY: 40 }),
+                      ),
+                    ]
+                  : []),
+                Scene.Subscription.emit(cancellation),
+                ...(trailingClick === 'BeforeKeyboard'
+                  ? [Scene.click(header)]
+                  : []),
+                Scene.expect(header).toHaveAttr('aria-expanded', 'true'),
+                Scene.keydown(header, key),
+                Scene.expect(header).toHaveAttr('aria-expanded', 'false'),
+                ...(trailingClick === 'AfterKeyboard'
+                  ? [
+                      Scene.click(header),
+                      Scene.expect(header).toHaveAttr('aria-expanded', 'false'),
+                    ]
+                  : []),
+                Scene.keydown(header, key),
+                Scene.expect(header).toHaveAttr('aria-expanded', 'true'),
+              )
+            })
+          },
+        )
+      })
+    })
+
+    it('restores a cancelled floating drag and ignores its trailing click', () => {
+      Scene.scene(
+        { update, view: sceneView() },
+        Scene.given(model),
+        Scene.pointerDown(header, { clientX: 10, clientY: 10 }),
+        Scene.Subscription.emit(
+          Message.MovedPanelPointer({ clientX: 60, clientY: 40 }),
+        ),
+        Scene.expect(Scene.selector('.dialkit-panel')).toHaveStyle(
+          'translate',
+          '50px 30px',
+        ),
+        Scene.Subscription.emit(Message.BlurredWindow()),
+        Scene.expect(Scene.selector('.dialkit-panel')).toHaveStyle(
+          'translate',
+          '0px 0px',
+        ),
+        Scene.Subscription.emit(
+          Message.MovedPanelPointer({ clientX: 100, clientY: 80 }),
+        ),
+        Scene.Subscription.emit(Message.ReleasedPanelPointer()),
+        Scene.click(header),
+        Scene.expect(header).toHaveAttr('aria-expanded', 'true'),
+        Scene.pointerDown(header, { clientX: 20, clientY: 20 }),
+        Scene.Subscription.emit(Message.ReleasedPanelPointer()),
+        Scene.click(header),
+        Scene.expect(header).toHaveAttr('aria-expanded', 'false'),
+      )
+    })
+
     it.each([['Floating'], ['Inline'], ['Section']] as const)(
       'collapses and expands on click in the %s layout',
       layout => {

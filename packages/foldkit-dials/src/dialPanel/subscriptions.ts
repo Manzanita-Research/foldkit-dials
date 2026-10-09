@@ -87,18 +87,40 @@ const headerDragSubscriptions = Subscription.make<Model, Message>()(entry => ({
       }),
       dependenciesToStream: ({ isActive }) =>
         Stream.when(
-          Stream.merge(
-            Subscription.fromEvent({
-              target: document,
-              type: 'pointermove',
-              mapEvent: ({ clientX, clientY }): Message =>
-                Message.MovedPanelPointer({ clientX, clientY }),
-            }),
-            Subscription.fromEvent({
-              target: document,
-              type: 'pointerup',
-              mapEvent: (): Message => Message.ReleasedPanelPointer(),
-            }),
+          Stream.mergeAll(
+            [
+              Subscription.fromEvent({
+                target: document,
+                type: 'pointermove',
+                mapEvent: ({ clientX, clientY }): Message =>
+                  Message.MovedPanelPointer({ clientX, clientY }),
+              }),
+              Subscription.fromEvent({
+                target: document,
+                type: 'pointerup',
+                mapEvent: (): Message => Message.ReleasedPanelPointer(),
+              }),
+              Subscription.fromEvent({
+                target: document,
+                type: 'pointercancel',
+                mapEvent: (): Message => Message.CancelledPanelDrag(),
+              }),
+              Subscription.fromEventFilterMap({
+                target: document,
+                type: 'keydown',
+                filterMapEvent: (event): Option.Option<Message> =>
+                  Option.liftPredicate(
+                    Message.CancelledPanelDrag(),
+                    () => event.key === 'Escape',
+                  ),
+              }),
+              Subscription.fromEvent({
+                target: window,
+                type: 'blur',
+                mapEvent: (): Message => Message.CancelledPanelDrag(),
+              }),
+            ],
+            { concurrency: 'unbounded' },
           ),
           Effect.sync(() => isActive),
         ),
@@ -270,7 +292,8 @@ const shortcutSubscriptions = (spec: PanelSpec) =>
 /** Every Subscription a panel needs: the header drag, each child control's
  *  Subscriptions, and, when any dial has a shortcut, the global shortcut
  *  listeners. Each key starts with the panel id, so several panels lift
- *  side by side. A panel without shortcuts installs no window listeners. */
+ *  side by side. A panel without shortcuts only listens on the window while
+ *  a header gesture is active, so lost focus can cancel it. */
 export const subscriptions = (
   spec: PanelSpec,
 ): Subscription.Subscriptions<Model, Message> =>
@@ -323,8 +346,10 @@ export const isContinuousMessage = (message: Message): boolean =>
     ClickedAction: () => false,
     ToggledFolder: () => false,
     ToggledPanel: () => false,
+    ToggledPanelWithKeyboard: () => false,
     PressedPanelHeader: () => false,
     ReleasedPanelPointer: () => false,
+    CancelledPanelDrag: () => false,
     GotVersionMenuMessage: () => false,
     ClickedVersion: () => false,
     ClickedSaveVersion: () => false,
